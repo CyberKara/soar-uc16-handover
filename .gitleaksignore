@@ -1,0 +1,19 @@
+# False positives: VPE comparisonKey node ids, not credentials.
+#
+# Every playbook JSON the SOAR 8.6 VPE writes carries a
+# "comparisonKey": "comparison_key_<uuid-or-0>" identifier on each decision
+# comparison and action-loop condition. gitleaks generic-api-key matches the
+# key name. Checked 2026-09-30: all entries below are such ids.
+#
+# Fingerprints are LINE-PINNED: re-scan with this file moved aside and repin
+# on every refresh of this mirror.
+
+playbooks/source/tehtris_host_posture/tehtris_host_posture.json:generic-api-key:205
+playbooks/source/tehtris_host_posture/tehtris_host_posture.json:generic-api-key:305
+playbooks/source/tehtris_host_posture/tehtris_host_posture.json:generic-api-key:322
+playbooks/source/tehtris_host_posture/tehtris_host_posture.json:generic-api-key:356
+playbooks/source/tehtris_host_posture/tehtris_host_posture.json:generic-api-key:421
+playbooks/source/tehtris_host_posture/tehtris_host_posture.json:generic-api-key:486
+playbooks/source/tehtris_host_posture/tehtris_host_posture.json:generic-api-key:553
+playbooks/source/tehtris_host_posture/tehtris_host_posture.json:generic-api-key:618
+playbooks/source/tehtris_host_posture/tehtris_host_posture.json:generic-api-key:683

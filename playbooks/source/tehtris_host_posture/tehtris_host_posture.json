@@ -1,0 +1,904 @@
+{
+    "blockly": false,
+    "blockly_xml": "<xml></xml>",
+    "category": "Endpoint",
+    "coa": {
+        "data": {
+            "hash": "502237a42b4773feddc55fc1a36b12843ef730f8",
+            "edges": [
+                {
+                    "id": "port_0_to_port_2",
+                    "sourceNode": "0",
+                    "sourcePort": "0_out",
+                    "targetNode": "2",
+                    "targetPort": "2_in"
+                },
+                {
+                    "id": "port_2_to_port_3",
+                    "sourceNode": "2",
+                    "sourcePort": "2_out",
+                    "targetNode": "3",
+                    "targetPort": "3_in"
+                },
+                {
+                    "id": "port_3_to_port_4",
+                    "sourceNode": "3",
+                    "sourcePort": "3_out",
+                    "targetNode": "4",
+                    "targetPort": "4_in"
+                },
+                {
+                    "id": "port_4_to_port_5",
+                    "sourceNode": "4",
+                    "sourcePort": "4_out",
+                    "targetNode": "5",
+                    "targetPort": "5_in"
+                },
+                {
+                    "id": "port_5_to_port_6",
+                    "conditions": [
+                        {
+                            "index": 0,
+                            "conditionKey": "condition_key_1"
+                        }
+                    ],
+                    "sourceNode": "5",
+                    "sourcePort": "5_out",
+                    "targetNode": "6",
+                    "targetPort": "6_in"
+                },
+                {
+                    "id": "port_5_to_port_13",
+                    "conditions": [
+                        {
+                            "index": 1,
+                            "conditionKey": "condition_key_2"
+                        }
+                    ],
+                    "sourceNode": "5",
+                    "sourcePort": "5_out",
+                    "targetNode": "13",
+                    "targetPort": "13_in"
+                },
+                {
+                    "id": "port_6_to_port_7",
+                    "sourceNode": "6",
+                    "sourcePort": "6_out",
+                    "targetNode": "7",
+                    "targetPort": "7_in"
+                },
+                {
+                    "id": "port_7_to_port_8",
+                    "sourceNode": "7",
+                    "sourcePort": "7_out",
+                    "targetNode": "8",
+                    "targetPort": "8_in"
+                },
+                {
+                    "id": "port_8_to_port_9",
+                    "sourceNode": "8",
+                    "sourcePort": "8_out",
+                    "targetNode": "9",
+                    "targetPort": "9_in"
+                },
+                {
+                    "id": "port_9_to_port_10",
+                    "sourceNode": "9",
+                    "sourcePort": "9_out",
+                    "targetNode": "10",
+                    "targetPort": "10_in"
+                },
+                {
+                    "id": "port_10_to_port_11",
+                    "sourceNode": "10",
+                    "sourcePort": "10_out",
+                    "targetNode": "11",
+                    "targetPort": "11_in"
+                },
+                {
+                    "id": "port_11_to_port_12",
+                    "sourceNode": "11",
+                    "sourcePort": "11_out",
+                    "targetNode": "12",
+                    "targetPort": "12_in"
+                },
+                {
+                    "id": "port_12_to_port_1",
+                    "sourceNode": "12",
+                    "sourcePort": "12_out",
+                    "targetNode": "1",
+                    "targetPort": "1_in"
+                },
+                {
+                    "id": "port_13_to_port_1",
+                    "sourceNode": "13",
+                    "sourcePort": "13_out",
+                    "targetNode": "1",
+                    "targetPort": "1_in"
+                }
+            ],
+            "nodes": {
+                "0": {
+                    "x": 190,
+                    "y": -6.394884621840902e-14,
+                    "id": "0",
+                    "data": {
+                        "id": "0",
+                        "type": "start",
+                        "advanced": {
+                            "join": []
+                        },
+                        "functionName": "on_start"
+                    },
+                    "type": "start",
+                    "errors": {},
+                    "warnings": {}
+                },
+                "1": {
+                    "x": 190,
+                    "y": 1800,
+                    "id": "1",
+                    "data": {
+                        "id": "1",
+                        "type": "end",
+                        "advanced": {
+                            "join": []
+                        },
+                        "functionId": 13,
+                        "functionName": "on_finish"
+                    },
+                    "type": "end",
+                    "errors": {},
+                    "userCode": "    ################################################################################\n    ################################################################################\n    ################################################################################\n\n    # Populate the generated `output` dict; the save after Custom Code End emits it.\n    # No block recorded an outcome (the run stopped early): report error.\n    raw_output = phantom.get_run_data(key=\"playbook_output\")\n    if raw_output:\n        output.update(json.loads(raw_output))\n    # The 8.6 VPE initialises every output above to [] (8.5 wrote None), so an\n    # output no block set is normalised to null here, whichever form a save wrote.\n    for key, value in output.items():\n        if value == []:\n            output[key] = None\n    if output[\"status\"] is None:\n        output[\"status\"] = \"error\"\n\n    ################################################################################\n    ################################################################################\n    ################################################################################\n",
+                    "warnings": {}
+                },
+                "2": {
+                    "x": 190,
+                    "y": 150,
+                    "id": "2",
+                    "data": {
+                        "id": "2",
+                        "type": "code",
+                        "advanced": {
+                            "join": [],
+                            "customName": "check inputs",
+                            "description": "Check the hostname input and build the lookback window in both time formats.",
+                            "customNameId": 0
+                        },
+                        "functionId": 1,
+                        "functionName": "check_inputs",
+                        "inputParameters": [
+                            "playbook_input:hostname",
+                            "playbook_input:lookback_minutes"
+                        ],
+                        "outputVariables": [
+                            "hostname",
+                            "time_from",
+                            "time_to",
+                            "from_date"
+                        ]
+                    },
+                    "type": "code",
+                    "errors": {},
+                    "userCode": "    ################################################################################\n    ################################################################################\n\n    # Read again here so this block does not depend on the generated variable names.\n    hostname_rows = phantom.collect2(container=container, datapath=[\"playbook_input:hostname\"])\n    lookback_rows = phantom.collect2(container=container, datapath=[\"playbook_input:lookback_minutes\"])\n    hostname = str((hostname_rows[0][0] if hostname_rows else None) or \"\").strip()\n    lookback_raw = str((lookback_rows[0][0] if lookback_rows else None) or \"\").strip()\n\n    problem = None\n    lookback = _DEFAULT_LOOKBACK_MINUTES\n    if lookback_raw:\n        try:\n            lookback = int(float(lookback_raw))\n        except (ValueError, OverflowError):\n            lookback = None\n        if lookback is None or not 1 <= lookback <= _MAX_LOOKBACK_MINUTES:\n            problem = (\"lookback_minutes must be a whole number of minutes from 1 to {} (42 days); got {}.\"\n                       .format(_MAX_LOOKBACK_MINUTES, _code(lookback_raw)))\n    if not hostname:\n        problem = \"No hostname was given. Run the playbook again with the endpoint's hostname as Tehtris shows it.\"\n\n    if problem:\n        phantom.error(problem)\n        phantom.add_note(\n            container=container,\n            note_type=\"general\",\n            title=\"Tehtris Posture - Error\",\n            content=problem,\n            note_format=\"markdown\",  # the content is markdown; add_note() defaults to html\n        )\n        phantom.save_run_data(key=\"playbook_output\", value=json.dumps({\n            \"status\": \"error\", \"host_found\": False, \"summary\": problem}))\n        return\n\n    # get processes takes ISO 8601 date-times, get events epoch seconds.\n    now = datetime.now(timezone.utc).replace(microsecond=0)\n    start = now - timedelta(minutes=lookback)\n    check_inputs__hostname = hostname\n    check_inputs__time_from = start.strftime(\"%Y-%m-%dT%H:%M:%SZ\")\n    check_inputs__time_to = now.strftime(\"%Y-%m-%dT%H:%M:%SZ\")\n    check_inputs__from_date = int(start.timestamp())\n\n    # Also saved as run data: later blocks read these keys in their own Custom Code.\n    for key, value in ((\"hostname\", check_inputs__hostname), (\"time_from\", check_inputs__time_from),\n                       (\"time_to\", check_inputs__time_to), (\"from_date\", check_inputs__from_date),\n                       (\"lookback_minutes\", lookback)):\n        phantom.save_run_data(key=\"check_inputs:\" + key, value=json.dumps(value))\n\n    ################################################################################\n    ################################################################################\n",
+                    "warnings": {}
+                },
+                "3": {
+                    "x": 190,
+                    "y": 300,
+                    "id": "3",
+                    "data": {
+                        "id": "3",
+                        "tab": "byConnector",
+                        "loop": {
+                            "enabled": false,
+                            "pauseUnit": "m",
+                            "conditions": [
+                                {
+                                    "type": "if",
+                                    "logic": "and",
+                                    "comparisons": [
+                                        {
+                                            "op": "==",
+                                            "param": "",
+                                            "value": "",
+                                            "comparisonKey": "comparison_key_0"
+                                        }
+                                    ],
+                                    "conditionKey": "condition_key_0",
+                                    "conditionIndex": 0
+                                }
+                            ],
+                            "pauseValue": 2,
+                            "exitAfterUnit": "m",
+                            "exitLoopAfter": 2,
+                            "exitAfterValue": 10,
+                            "exitConditionEnabled": false
+                        },
+                        "type": "action",
+                        "action": "get host detail",
+                        "advanced": {
+                            "join": [],
+                            "customName": "get host detail",
+                            "description": "Find the endpoint in the Tehtris EDR inventory (exact hostname match).",
+                            "customNameId": 0
+                        },
+                        "connector": "Tehtris EDR",
+                        "actionType": "investigate",
+                        "functionId": 2,
+                        "parameters": {
+                            "hostname": "check_inputs:custom_function:hostname"
+                        },
+                        "connectorId": "bf34e3e5-c6da-49b0-8dbc-cd4f2e080191",
+                        "functionName": "get_host_detail",
+                        "connectorConfigs": [
+                            "tehtris_mock_8446"
+                        ],
+                        "connectorVersion": "v1",
+                        "requiredParameters": [
+                            {
+                                "field": "hostname",
+                                "default": "",
+                                "data_type": "string"
+                            }
+                        ]
+                    },
+                    "type": "action",
+                    "errors": {},
+                    "userCode": "    ################################################################################\n\n    # Write your custom code here...\n\n    ################################################################################\n",
+                    "warnings": {}
+                },
+                "4": {
+                    "x": 190,
+                    "y": 450,
+                    "id": "4",
+                    "data": {
+                        "id": "4",
+                        "type": "code",
+                        "advanced": {
+                            "join": [],
+                            "customName": "check host",
+                            "description": "Classify the inventory lookup: found, not found, or the call failed.",
+                            "customNameId": 0
+                        },
+                        "functionId": 3,
+                        "functionName": "check_host",
+                        "inputParameters": [
+                            "get_host_detail:action_result.status",
+                            "get_host_detail:action_result.message",
+                            "get_host_detail:action_result.summary.total_hosts"
+                        ],
+                        "outputVariables": [
+                            "host_state"
+                        ]
+                    },
+                    "type": "code",
+                    "errors": {},
+                    "userCode": "    ################################################################################\n    ################################################################################\n\n    # Since connector v1.2.1 an unknown hostname is a success with total_hosts 0;\n    # a failed status means the lookup itself failed.\n    rows = phantom.collect2(container=container, datapath=[\n        \"get_host_detail:action_result.status\",\n        \"get_host_detail:action_result.message\",\n        \"get_host_detail:action_result.summary.total_hosts\",\n    ])\n    status, message, total = (list(rows[0]) + [None, None, None])[:3] if rows else (None, \"The inventory lookup returned no result.\", None)\n    if status != \"success\":\n        check_host__host_state = \"failed\"\n    elif not total:\n        check_host__host_state = \"not_found\"\n    else:\n        check_host__host_state = \"found\"\n\n    phantom.save_run_data(key=\"check_host:host_state\", value=json.dumps(check_host__host_state))\n    phantom.save_run_data(key=\"check_host:message\", value=json.dumps(message or \"\"))\n\n    ################################################################################\n    ################################################################################\n",
+                    "warnings": {}
+                },
+                "5": {
+                    "x": 190,
+                    "y": 600,
+                    "id": "5",
+                    "data": {
+                        "id": "5",
+                        "type": "decision",
+                        "advanced": {
+                            "join": [],
+                            "delimiter": ",",
+                            "customName": "host found",
+                            "customNameId": 0,
+                            "delimiter_enabled": true
+                        },
+                        "conditions": [
+                            {
+                                "type": "if",
+                                "logic": "and",
+                                "display": "If",
+                                "customName": "found",
+                                "comparisons": [
+                                    {
+                                        "op": "==",
+                                        "param": "check_host:custom_function:host_state",
+                                        "value": "found",
+                                        "comparisonKey": "comparison_key_a74ec806-6c7a-48fe-b1b0-61925fab674d",
+                                        "conditionIndex": 0
+                                    }
+                                ],
+                                "conditionKey": "condition_key_1",
+                                "conditionIndex": 0
+                            },
+                            {
+                                "type": "else",
+                                "logic": "and",
+                                "display": "Else",
+                                "customName": "not found or failed",
+                                "comparisons": [
+                                    {
+                                        "op": "==",
+                                        "param": "",
+                                        "value": "",
+                                        "comparisonKey": "comparison_key_c3788408-4034-4b40-adf9-e9749d725e26",
+                                        "conditionIndex": 1
+                                    }
+                                ],
+                                "conditionKey": "condition_key_2",
+                                "conditionIndex": 1
+                            }
+                        ],
+                        "functionId": 4,
+                        "functionName": "host_found"
+                    },
+                    "type": "decision",
+                    "errors": {},
+                    "warnings": {}
+                },
+                "6": {
+                    "x": 190,
+                    "y": 750,
+                    "id": "6",
+                    "data": {
+                        "id": "6",
+                        "tab": "byConnector",
+                        "loop": {
+                            "enabled": false,
+                            "pauseUnit": "m",
+                            "conditions": [
+                                {
+                                    "type": "if",
+                                    "logic": "and",
+                                    "comparisons": [
+                                        {
+                                            "op": "==",
+                                            "param": "",
+                                            "value": "",
+                                            "comparisonKey": "comparison_key_0"
+                                        }
+                                    ],
+                                    "conditionKey": "condition_key_0",
+                                    "conditionIndex": 0
+                                }
+                            ],
+                            "pauseValue": 2,
+                            "exitAfterUnit": "m",
+                            "exitLoopAfter": 2,
+                            "exitAfterValue": 10,
+                            "exitConditionEnabled": false
+                        },
+                        "type": "action",
+                        "action": "get isolation status",
+                        "advanced": {
+                            "join": [],
+                            "customName": "get isolation status",
+                            "description": "Read whether the endpoint is network-isolated (live: needs the agent connected).",
+                            "customNameId": 0
+                        },
+                        "connector": "Tehtris EDR",
+                        "actionType": "investigate",
+                        "functionId": 5,
+                        "parameters": {
+                            "hostname": "check_inputs:custom_function:hostname"
+                        },
+                        "connectorId": "bf34e3e5-c6da-49b0-8dbc-cd4f2e080191",
+                        "functionName": "get_isolation_status",
+                        "connectorConfigs": [
+                            "tehtris_mock_8446"
+                        ],
+                        "connectorVersion": "v1",
+                        "requiredParameters": [
+                            {
+                                "field": "hostname",
+                                "default": "",
+                                "data_type": "string"
+                            }
+                        ]
+                    },
+                    "type": "action",
+                    "errors": {},
+                    "userCode": "    ################################################################################\n\n    # Write your custom code here...\n\n    ################################################################################\n",
+                    "warnings": {}
+                },
+                "7": {
+                    "x": 190,
+                    "y": 900,
+                    "id": "7",
+                    "data": {
+                        "id": "7",
+                        "tab": "byConnector",
+                        "loop": {
+                            "enabled": false,
+                            "pauseUnit": "m",
+                            "conditions": [
+                                {
+                                    "type": "if",
+                                    "logic": "and",
+                                    "comparisons": [
+                                        {
+                                            "op": "==",
+                                            "param": "",
+                                            "value": "",
+                                            "comparisonKey": "comparison_key_0"
+                                        }
+                                    ],
+                                    "conditionKey": "condition_key_0",
+                                    "conditionIndex": 0
+                                }
+                            ],
+                            "pauseValue": 2,
+                            "exitAfterUnit": "m",
+                            "exitLoopAfter": 2,
+                            "exitAfterValue": 10,
+                            "exitConditionEnabled": false
+                        },
+                        "type": "action",
+                        "action": "get system info",
+                        "advanced": {
+                            "join": [],
+                            "customName": "get system info",
+                            "description": "Read OS details (live; Windows only, other systems may answer 501).",
+                            "customNameId": 0
+                        },
+                        "connector": "Tehtris EDR",
+                        "actionType": "investigate",
+                        "functionId": 6,
+                        "parameters": {
+                            "hostname": "check_inputs:custom_function:hostname"
+                        },
+                        "connectorId": "bf34e3e5-c6da-49b0-8dbc-cd4f2e080191",
+                        "functionName": "get_system_info",
+                        "connectorConfigs": [
+                            "tehtris_mock_8446"
+                        ],
+                        "connectorVersion": "v1",
+                        "requiredParameters": [
+                            {
+                                "field": "hostname",
+                                "default": "",
+                                "data_type": "string"
+                            }
+                        ]
+                    },
+                    "type": "action",
+                    "errors": {},
+                    "userCode": "    ################################################################################\n\n    # Write your custom code here...\n\n    ################################################################################\n",
+                    "warnings": {}
+                },
+                "8": {
+                    "x": 190,
+                    "y": 1050,
+                    "id": "8",
+                    "data": {
+                        "id": "8",
+                        "tab": "byConnector",
+                        "loop": {
+                            "enabled": false,
+                            "pauseUnit": "m",
+                            "conditions": [
+                                {
+                                    "type": "if",
+                                    "logic": "and",
+                                    "comparisons": [
+                                        {
+                                            "op": "==",
+                                            "param": "",
+                                            "value": "",
+                                            "comparisonKey": "comparison_key_0"
+                                        }
+                                    ],
+                                    "conditionKey": "condition_key_0",
+                                    "conditionIndex": 0
+                                }
+                            ],
+                            "pauseValue": 2,
+                            "exitAfterUnit": "m",
+                            "exitLoopAfter": 2,
+                            "exitAfterValue": 10,
+                            "exitConditionEnabled": false
+                        },
+                        "type": "action",
+                        "action": "get processes",
+                        "advanced": {
+                            "join": [],
+                            "customName": "get processes",
+                            "description": "List the processes alive during the lookback window (works with the agent offline).",
+                            "customNameId": 0
+                        },
+                        "connector": "Tehtris EDR",
+                        "actionType": "investigate",
+                        "functionId": 7,
+                        "parameters": {
+                            "time_to": "check_inputs:custom_function:time_to",
+                            "hostname": "check_inputs:custom_function:hostname",
+                            "time_from": "check_inputs:custom_function:time_from"
+                        },
+                        "connectorId": "bf34e3e5-c6da-49b0-8dbc-cd4f2e080191",
+                        "functionName": "get_processes",
+                        "connectorConfigs": [
+                            "tehtris_mock_8446"
+                        ],
+                        "connectorVersion": "v1",
+                        "requiredParameters": [
+                            {
+                                "field": "hostname",
+                                "default": "",
+                                "data_type": "string"
+                            }
+                        ]
+                    },
+                    "type": "action",
+                    "errors": {},
+                    "userCode": "    ################################################################################\n\n    # Write your custom code here...\n\n    ################################################################################\n",
+                    "warnings": {}
+                },
+                "9": {
+                    "x": 190,
+                    "y": 1200,
+                    "id": "9",
+                    "data": {
+                        "id": "9",
+                        "tab": "byConnector",
+                        "loop": {
+                            "enabled": false,
+                            "pauseUnit": "m",
+                            "conditions": [
+                                {
+                                    "type": "if",
+                                    "logic": "and",
+                                    "comparisons": [
+                                        {
+                                            "op": "==",
+                                            "param": "",
+                                            "value": "",
+                                            "comparisonKey": "comparison_key_0"
+                                        }
+                                    ],
+                                    "conditionKey": "condition_key_0",
+                                    "conditionIndex": 0
+                                }
+                            ],
+                            "pauseValue": 2,
+                            "exitAfterUnit": "m",
+                            "exitLoopAfter": 2,
+                            "exitAfterValue": 10,
+                            "exitConditionEnabled": false
+                        },
+                        "type": "action",
+                        "action": "get network info",
+                        "advanced": {
+                            "join": [],
+                            "customName": "get network info",
+                            "description": "Read the endpoint's live network connections (netstat).",
+                            "customNameId": 0
+                        },
+                        "connector": "Tehtris EDR",
+                        "actionType": "investigate",
+                        "functionId": 8,
+                        "parameters": {
+                            "hostname": "check_inputs:custom_function:hostname"
+                        },
+                        "connectorId": "bf34e3e5-c6da-49b0-8dbc-cd4f2e080191",
+                        "functionName": "get_network_info",
+                        "connectorConfigs": [
+                            "tehtris_mock_8446"
+                        ],
+                        "connectorVersion": "v1",
+                        "requiredParameters": [
+                            {
+                                "field": "hostname",
+                                "default": "",
+                                "data_type": "string"
+                            }
+                        ]
+                    },
+                    "type": "action",
+                    "errors": {},
+                    "userCode": "    ################################################################################\n\n    # Write your custom code here...\n\n    ################################################################################\n",
+                    "warnings": {}
+                },
+                "10": {
+                    "x": 190,
+                    "y": 1350,
+                    "id": "10",
+                    "data": {
+                        "id": "10",
+                        "tab": "byConnector",
+                        "loop": {
+                            "enabled": false,
+                            "pauseUnit": "m",
+                            "conditions": [
+                                {
+                                    "type": "if",
+                                    "logic": "and",
+                                    "comparisons": [
+                                        {
+                                            "op": "==",
+                                            "param": "",
+                                            "value": "",
+                                            "comparisonKey": "comparison_key_0"
+                                        }
+                                    ],
+                                    "conditionKey": "condition_key_0",
+                                    "conditionIndex": 0
+                                }
+                            ],
+                            "pauseValue": 2,
+                            "exitAfterUnit": "m",
+                            "exitLoopAfter": 2,
+                            "exitAfterValue": 10,
+                            "exitConditionEnabled": false
+                        },
+                        "type": "action",
+                        "action": "list software",
+                        "advanced": {
+                            "join": [],
+                            "customName": "list software",
+                            "description": "List the software installed on the endpoint (live).",
+                            "customNameId": 0
+                        },
+                        "connector": "Tehtris EDR",
+                        "actionType": "investigate",
+                        "functionId": 9,
+                        "parameters": {
+                            "hostname": "check_inputs:custom_function:hostname"
+                        },
+                        "connectorId": "bf34e3e5-c6da-49b0-8dbc-cd4f2e080191",
+                        "functionName": "list_software",
+                        "connectorConfigs": [
+                            "tehtris_mock_8446"
+                        ],
+                        "connectorVersion": "v1",
+                        "requiredParameters": [
+                            {
+                                "field": "hostname",
+                                "default": "",
+                                "data_type": "string"
+                            }
+                        ]
+                    },
+                    "type": "action",
+                    "errors": {},
+                    "userCode": "    ################################################################################\n\n    # Write your custom code here...\n\n    ################################################################################\n",
+                    "warnings": {}
+                },
+                "11": {
+                    "x": 190,
+                    "y": 1500,
+                    "id": "11",
+                    "data": {
+                        "id": "11",
+                        "tab": "byConnector",
+                        "loop": {
+                            "enabled": false,
+                            "pauseUnit": "m",
+                            "conditions": [
+                                {
+                                    "type": "if",
+                                    "logic": "and",
+                                    "comparisons": [
+                                        {
+                                            "op": "==",
+                                            "param": "",
+                                            "value": "",
+                                            "comparisonKey": "comparison_key_0"
+                                        }
+                                    ],
+                                    "conditionKey": "condition_key_0",
+                                    "conditionIndex": 0
+                                }
+                            ],
+                            "pauseValue": 2,
+                            "exitAfterUnit": "m",
+                            "exitLoopAfter": 2,
+                            "exitAfterValue": 10,
+                            "exitConditionEnabled": false
+                        },
+                        "type": "action",
+                        "action": "get events",
+                        "advanced": {
+                            "join": [],
+                            "customName": "get recent events",
+                            "description": "Fetch the host's Tehtris events since the window start (alert context).",
+                            "customNameId": 0
+                        },
+                        "connector": "Tehtris EDR",
+                        "actionType": "investigate",
+                        "functionId": 10,
+                        "parameters": {
+                            "hostname": "check_inputs:custom_function:hostname",
+                            "from_date": "check_inputs:custom_function:from_date"
+                        },
+                        "connectorId": "bf34e3e5-c6da-49b0-8dbc-cd4f2e080191",
+                        "functionName": "get_recent_events",
+                        "connectorConfigs": [
+                            "tehtris_mock_8446"
+                        ],
+                        "connectorVersion": "v1",
+                        "requiredParameters": [
+                            {
+                                "field": "from_date",
+                                "default": "",
+                                "data_type": "numeric"
+                            },
+                            {
+                                "field": "hostname",
+                                "default": "",
+                                "data_type": "string"
+                            }
+                        ]
+                    },
+                    "type": "action",
+                    "errors": {},
+                    "userCode": "    ################################################################################\n\n    # Write your custom code here...\n\n    ################################################################################\n",
+                    "warnings": {}
+                },
+                "12": {
+                    "x": 190,
+                    "y": 1650,
+                    "id": "12",
+                    "data": {
+                        "id": "12",
+                        "type": "code",
+                        "advanced": {
+                            "join": [],
+                            "customName": "note posture",
+                            "description": "Write the Tehtris Posture note, one section per action; a failed call shows as not available.",
+                            "customNameId": 0
+                        },
+                        "functionId": 11,
+                        "functionName": "note_posture",
+                        "inputParameters": [
+                            "check_inputs:custom_function:hostname",
+                            "get_recent_events:action_result.status"
+                        ],
+                        "outputVariables": []
+                    },
+                    "type": "code",
+                    "errors": {},
+                    "userCode": "    ################################################################################\n    ################################################################################\n\n    hostname = json.loads(phantom.get_run_data(key=\"check_inputs:hostname\") or '\"\"')\n    window = {\n        \"time_from\": json.loads(phantom.get_run_data(key=\"check_inputs:time_from\") or '\"\"'),\n        \"time_to\": json.loads(phantom.get_run_data(key=\"check_inputs:time_to\") or '\"\"'),\n        \"minutes\": json.loads(phantom.get_run_data(key=\"check_inputs:lookback_minutes\") or \"null\"),\n    }\n\n    # Every action ran on this path; read each one's result by its block name.\n    outcome = {}\n    for name in _ACTIONS:\n        rows = phantom.collect2(container=container, datapath=[\n            name + \":action_result.status\",\n            name + \":action_result.message\",\n            name + \":action_result.summary\",\n            name + \":action_result.data\",\n        ])\n        status, message, summary, data = (list(rows[0]) + [None] * 4)[:4] if rows else (None, \"no result\", None, None)\n        outcome[name] = {\"status\": status, \"message\": message or \"\", \"summary\": summary or {}, \"data\": data or []}\n\n    sections, playbook_output = _posture(hostname, window, outcome)\n    for part_title, part_content in _pack(\"Tehtris Posture: {}\".format(hostname), sections):\n        phantom.add_note(\n            container=container,\n            note_type=\"general\",\n            title=part_title,\n            content=part_content,\n            note_format=\"markdown\",  # the content is markdown; add_note() defaults to html\n        )\n\n    phantom.save_run_data(key=\"playbook_output\", value=json.dumps(playbook_output))\n    phantom.debug(\"Tehtris posture note written: status={}\".format(playbook_output[\"status\"]))\n\n    ################################################################################\n    ################################################################################\n",
+                    "warnings": {}
+                },
+                "13": {
+                    "x": 520,
+                    "y": 750,
+                    "id": "13",
+                    "data": {
+                        "id": "13",
+                        "type": "code",
+                        "advanced": {
+                            "join": [],
+                            "customName": "note no host",
+                            "description": "Note why no posture was read: the host is unknown to Tehtris, or the lookup failed.",
+                            "customNameId": 0
+                        },
+                        "functionId": 12,
+                        "functionName": "note_no_host",
+                        "inputParameters": [
+                            "check_inputs:custom_function:hostname",
+                            "check_host:custom_function:host_state"
+                        ],
+                        "outputVariables": []
+                    },
+                    "type": "code",
+                    "errors": {},
+                    "userCode": "    ################################################################################\n    ################################################################################\n\n    hostname = json.loads(phantom.get_run_data(key=\"check_inputs:hostname\") or '\"\"')\n    state = json.loads(phantom.get_run_data(key=\"check_host:host_state\") or '\"failed\"')\n    message = \" \".join((json.loads(phantom.get_run_data(key=\"check_host:message\") or '\"\"') or \"\").split())\n\n    if state == \"not_found\":\n        headline = \"Tehtris EDR has no endpoint named {}.\".format(_code(hostname))\n        status = \"not_found\"\n    else:\n        headline = \"The Tehtris EDR inventory lookup for {} failed, so no posture was read.\".format(_code(hostname))\n        status = \"error\"\n    content = \"# Tehtris posture: {}\\n\\n{}\\n\\n**Tehtris said:** {}\".format(\n        _code(hostname), headline, _code(message, limit=1000))\n\n    phantom.add_note(\n        container=container,\n        note_type=\"general\",\n        title=\"Tehtris Posture: {}\".format(hostname),\n        content=content,\n        note_format=\"markdown\",  # the content is markdown; add_note() defaults to html\n    )\n    phantom.save_run_data(key=\"playbook_output\", value=json.dumps({\n        \"status\": status, \"host_found\": False, \"summary\": \"{} {}\".format(headline.replace(\"`\", \"\"), message)[:_SUMMARY_MAX_CHARS]}))\n\n    ################################################################################\n    ################################################################################\n",
+                    "warnings": {}
+                }
+            },
+            "notes": "",
+            "description": "Data playbook (UC16 PB1) run by an analyst on any container. Reads a host's security posture from Tehtris EDR -- inventory, isolation state, system info, processes, live connections, installed software and recent events -- and writes it as a Tehtris Posture note. Changes nothing on the host.",
+            "globalCustomCode": "################################################################################\n\n# Design notes (kept here because a VPE save replaces the module docstring):\n# UC16 PB1 -- see docs/usecases/uc16_tehtris_edr_implementation_plan.md.\n# Read-only: every action here is an investigate action, so the playbook is\n# safe to run and re-run on any container (label \"*\"). The hostname input is\n# the check that it belongs; get host detail is the existence check and, since\n# connector v1.2.1, reports an unknown host as a success with total_hosts 0.\n# Live calls (isolation status, system info, netstat, software) need the agent\n# connected -- 504 otherwise -- and system info is Windows-only (501); a failed\n# call becomes \"not available\" in the note and never fails the playbook.\n\nfrom datetime import timezone\n\n# The target SOAR shows at most about 22,000 characters of a note, so no note\n# is posted longer than this; a longer one is split by _note_parts().\n_NOTE_MAX_CHARS = 20000\n_DEFAULT_LOOKBACK_MINUTES = 60\n# Tehtris refuses an events query that starts more than 43 days back.\n_MAX_LOOKBACK_MINUTES = 42 * 24 * 60\n# Characters each table may use, so a table never has to be split across\n# note parts; rows past the budget stay in the action result.\n_TABLE_BUDGETS = {\"processes\": 9000, \"connections\": 4000, \"software\": 4000, \"events\": 4000}\n_CELL_MAX_CHARS = 200\n_SUMMARY_MAX_CHARS = 2000\n_ACTIONS = [\n    \"get_host_detail\",\n    \"get_isolation_status\",\n    \"get_system_info\",\n    \"get_processes\",\n    \"get_network_info\",\n    \"list_software\",\n    \"get_recent_events\",\n]\n\n\ndef _note_parts(title, content, limit=_NOTE_MAX_CHARS):\n    \"\"\"[(title, content)] for one note, or numbered parts \"title (k/N)\" cut at\n    line boundaries when content is longer than limit. A line longer than the\n    limit is cut inside itself. Parts after the first open with a heading.\"\"\"\n    if len(content) <= limit:\n        return [(title, content)]\n    budget = limit - 300  # room for the heading added to later parts\n    chunks, current, size = [], [], 0\n    for line in content.split(\"\\n\"):\n        for piece in [line[i:i + budget] for i in range(0, len(line), budget)] or [\"\"]:\n            if current and size + len(piece) + 1 > budget:\n                chunks.append(\"\\n\".join(current))\n                current, size = [], 0\n            current.append(piece)\n            size += len(piece) + 1\n    if current:\n        chunks.append(\"\\n\".join(current))\n    total = len(chunks)\n    return [(\"{} ({}/{})\".format(title, n, total),\n             chunk if n == 1 else \"# {} ({}/{}, continued)\\n\\n{}\".format(title, n, total, chunk))\n            for n, chunk in enumerate(chunks, 1)]\n\n\ndef _code(value, limit=_CELL_MAX_CHARS):\n    \"\"\"A value from Tehtris as an inline code span, safe inside a markdown table:\n    one line, no backticks, pipes escaped, cut at limit. Code spans keep links\n    and markup in endpoint data (command lines, paths) inert.\"\"\"\n    if value is None or value == \"\":\n        return \"\u2014\"\n    if isinstance(value, (dict, list)):\n        value = json.dumps(value, sort_keys=True, default=str)\n    text = \" \".join(str(value).split()).replace(\"`\", \"'\")\n    if len(text) > limit:\n        text = text[:limit - 1] + \"\u2026\"\n    return \"`{}`\".format(text.replace(\"|\", \"\\\\|\"))\n\n\ndef _table(headers, rows, what, budget):\n    \"\"\"A markdown table of as many rows as fit in `budget` characters, with a\n    line saying how many were left out.\"\"\"\n    if not rows:\n        return [\"No {} returned.\".format(what)]\n    lines = [\"| \" + \" | \".join(headers) + \" |\", \"|\" + \"---|\" * len(headers)]\n    size = sum(len(line) + 1 for line in lines)\n    shown = 0\n    for row in rows:\n        line = \"| \" + \" | \".join(row) + \" |\"\n        if shown and size + len(line) + 1 > budget:\n            break\n        lines.append(line)\n        size += len(line) + 1\n        shown += 1\n    if shown < len(rows):\n        lines.append(\"\")\n        lines.append(\"{} more {} are in the action result.\".format(len(rows) - shown, what))\n    return lines\n\n\ndef _pack(title, sections, limit=_NOTE_MAX_CHARS):\n    \"\"\"[(title, content)] with whole sections packed into as few notes as fit\n    under limit, titled \"title (k/N)\" when there are several; a section is only\n    ever cut (by _note_parts) if it alone is longer than a note.\"\"\"\n    budget = limit - 300  # room for the heading added to later parts\n    chunks, current = [], \"\"\n    for section in sections:\n        if len(section) > budget:\n            if current:\n                chunks.append(current)\n                current = \"\"\n            chunks += [content for _, content in _note_parts(title, section, budget)]\n            continue\n        if current and len(current) + len(section) + 2 > budget:\n            chunks.append(current)\n            current = \"\"\n        current = section if not current else current + \"\\n\\n\" + section\n    if current:\n        chunks.append(current)\n    if len(chunks) == 1:\n        return [(title, chunks[0])]\n    total = len(chunks)\n    return [(\"{} ({}/{})\".format(title, n, total),\n             chunk if n == 1 else \"# {} ({}/{}, continued)\\n\\n{}\".format(title, n, total, chunk))\n            for n, chunk in enumerate(chunks, 1)]\n\n\ndef _plain_rows(data):\n    \"\"\"Action-result data items without the connector's raw_json copy.\"\"\"\n    return [{k: v for k, v in item.items() if k != \"raw_json\"} for item in data if isinstance(item, dict)]\n\n\ndef _generic_rows(data, max_columns=8):\n    \"\"\"Headers and rows for replies whose columns the vendor does not list\n    (netstat, software): the keys of the rows themselves, in first-seen order.\"\"\"\n    rows = _plain_rows(data)\n    headers = []\n    for row in rows:\n        for key in row:\n            if key not in headers:\n                headers.append(key)\n    headers = headers[:max_columns]\n    return headers, [[_code(row.get(h)) for h in headers] for row in rows]\n\n\ndef _nested(item, dotted):\n    for part in dotted.split(\".\"):\n        item = item.get(part) if isinstance(item, dict) else None\n    return item\n\n\ndef _unavailable(result):\n    return \"Not available: {}\".format(_code(result.get(\"message\") or \"no result\", limit=300))\n\n\ndef _posture(hostname, window, outcome):\n    \"\"\"(note sections, playbook output) from every action's outcome, a dict\n    {action name: {status, message, summary, data}}.\"\"\"\n    ok = {name: (outcome.get(name) or {}).get(\"status\") == \"success\" for name in _ACTIONS}\n    detail = outcome[\"get_host_detail\"]\n    hosts = _plain_rows(detail.get(\"data\") or [])\n    host = hosts[0] if hosts else {}\n\n    isolation = outcome[\"get_isolation_status\"]\n    isolated = (isolation.get(\"summary\") or {}).get(\"isolated\") if ok[\"get_isolation_status\"] else None\n    isolation_state = \"isolated\" if isolated is True else \"not isolated\" if isolated is False else \"unknown\"\n    if ok[\"get_isolation_status\"]:\n        isolation_text = {\"isolated\": \"**isolated**\", \"not isolated\": \"not isolated\"}.get(\n            isolation_state, \"unknown (Tehtris answered without a state)\")\n    else:\n        isolation_text = \"unknown \u2014 \" + _unavailable(isolation)\n\n    system = _plain_rows(outcome[\"get_system_info\"].get(\"data\") or [])\n    system = system[0] if system else {}\n    os_text = \" \".join(str(system.get(k)) for k in (\"name\", \"release\", \"version\") if system.get(k))\n    if not os_text:\n        host_os = host.get(\"os\") if isinstance(host.get(\"os\"), dict) else {}\n        os_text = \" \".join(str(host_os.get(k)) for k in (\"name\", \"version\") if host_os.get(k))\n\n    def count(name, key):\n        return (outcome[name].get(\"summary\") or {}).get(key) if ok[name] else None\n\n    process_count = count(\"get_processes\", \"num_processes\")\n    connection_count = count(\"get_network_info\", \"num_connections\")\n    software_count = count(\"list_software\", \"num_software\")\n    event_count = count(\"get_recent_events\", \"num_events\")\n\n    lines = [\n        \"# Tehtris posture: {}\".format(_code(hostname)),\n        \"\",\n        \"- **Isolation:** {}\".format(isolation_text),\n        \"- **OS:** {}\".format(_code(os_text) if os_text else \"unknown\"),\n        \"- **Agent last seen:** {}\".format(_code(host.get(\"lastSeen\"))),\n        \"- **First seen:** {}\".format(_code(host.get(\"firstSeen\"))),\n        \"- **Domain:** {}\".format(_code(host.get(\"domain\"))),\n        \"- **Local / remote IP:** {} / {}\".format(_code(host.get(\"localIp\")), _code(host.get(\"remoteIp\"))),\n        \"- **Tags:** {}\".format(_code(host.get(\"tags\"))),\n        \"- **Endpoint:** uuid {}, appliance {}\".format(_code(host.get(\"uuid\")), _code(host.get(\"applianceId\"))),\n        \"- **Window:** {} to {} ({} minutes)\".format(_code(window[\"time_from\"]), _code(window[\"time_to\"]), window[\"minutes\"]),\n    ]\n    if len(hosts) > 1:\n        lines.append(\"- **{} endpoints are named {}** (a re-installed agent keeps its hostname under a new uuid). \"\n                     \"This note shows the most recently seen one; write actions refuse such a hostname.\".format(\n                         len(hosts), _code(hostname)))\n\n    sections = []\n    lines += [\"\", \"## System info\", \"\"]\n    if ok[\"get_system_info\"] and system:\n        lines += _table([\"Name\", \"Type\", \"Architecture\", \"Release\", \"Version\"],\n                        [[_code(system.get(k)) for k in (\"name\", \"type\", \"architecture\", \"release\", \"version\")]],\n                        \"system info\", _NOTE_MAX_CHARS)\n    else:\n        lines.append(_unavailable(outcome[\"get_system_info\"]) if not ok[\"get_system_info\"] else \"No system info returned.\")\n\n    sections.append(\"\\n\".join(lines))\n    lines = [\"## Processes alive in the window ({})\".format(process_count if process_count is not None else \"?\"), \"\"]\n    if ok[\"get_processes\"]:\n        rows = []\n        for proc in _plain_rows(outcome[\"get_processes\"].get(\"data\") or []):\n            binaries = proc.get(\"binaries\") if isinstance(proc.get(\"binaries\"), list) else []\n            first = binaries[0] if binaries and isinstance(binaries[0], dict) else {}\n            rows.append([_code(proc.get(\"pid\")), _code(proc.get(\"ppid\")), _code(proc.get(\"username\")),\n                         _code(proc.get(\"created\")), _code(proc.get(\"cmdline\")), _code(first.get(\"sha256\"))])\n        lines += _table([\"PID\", \"PPID\", \"User\", \"Created\", \"Command line\", \"SHA-256\"], rows, \"processes\", _TABLE_BUDGETS[\"processes\"])\n    else:\n        lines.append(_unavailable(outcome[\"get_processes\"]))\n\n    sections.append(\"\\n\".join(lines))\n    lines = [\"## Network connections, live ({})\".format(connection_count if connection_count is not None else \"?\"), \"\"]\n    if ok[\"get_network_info\"]:\n        headers, rows = _generic_rows(outcome[\"get_network_info\"].get(\"data\") or [])\n        lines += _table(headers, rows, \"connections\", _TABLE_BUDGETS[\"connections\"])\n    else:\n        lines.append(_unavailable(outcome[\"get_network_info\"]))\n\n    sections.append(\"\\n\".join(lines))\n    lines = [\"## Installed software ({})\".format(software_count if software_count is not None else \"?\"), \"\"]\n    if ok[\"list_software\"]:\n        headers, rows = _generic_rows(outcome[\"list_software\"].get(\"data\") or [])\n        lines += _table(headers, rows, \"software entries\", _TABLE_BUDGETS[\"software\"])\n    else:\n        lines.append(_unavailable(outcome[\"list_software\"]))\n\n    sections.append(\"\\n\".join(lines))\n    lines = [\"## Tehtris events since {} ({})\".format(_code(window[\"time_from\"]),\n                                                    event_count if event_count is not None else \"?\"), \"\"]\n    if ok[\"get_recent_events\"]:\n        rows = []\n        for event in _plain_rows(outcome[\"get_recent_events\"].get(\"data\") or []):\n            rows.append([_code(event.get(\"time\")), _code(event.get(\"lvl\")), _code(event.get(\"module\")),\n                         _code(_nested(event, \"threat.name\")), _code(event.get(\"path\") or event.get(\"cmdline\"))])\n        lines += _table([\"Time\", \"Level\", \"Module\", \"Threat\", \"Path / command line\"], rows, \"events\", _TABLE_BUDGETS[\"events\"])\n    else:\n        lines.append(_unavailable(outcome[\"get_recent_events\"]))\n    sections.append(\"\\n\".join(lines))\n\n    missing = [name for name in _ACTIONS if not ok[name]]\n    status = \"success\" if not missing else \"partial\"\n    summary = \"\\n\".join([\n        \"Tehtris posture of {}: isolation {}; OS {}; agent last seen {}.\".format(\n            hostname, isolation_state, os_text or \"unknown\", host.get(\"lastSeen\") or \"unknown\"),\n        \"Processes {}, connections {}, software {}, events {} (window {} min).\".format(\n            *[\"n/a\" if c is None else c for c in (process_count, connection_count, software_count, event_count)],\n            window[\"minutes\"]),\n        \"Not available: {}.\".format(\", \".join(missing)) if missing else \"All sections available.\",\n    ])[:_SUMMARY_MAX_CHARS]\n    output = {\n        \"status\": status,\n        \"host_found\": True,\n        \"os\": os_text or None,\n        \"agent_last_seen\": host.get(\"lastSeen\"),\n        \"isolation_state\": isolation_state,\n        \"process_count\": process_count,\n        \"connection_count\": connection_count,\n        \"software_count\": software_count,\n        \"event_count\": event_count,\n        \"summary\": summary,\n    }\n    return sections, output\n################################################################################\n"
+        },
+        "input_spec": [
+            {
+                "name": "hostname",
+                "contains": [
+                    "host name"
+                ],
+                "description": "Required. The endpoint's hostname as Tehtris EDR shows it (exact match, case-insensitive)."
+            },
+            {
+                "name": "lookback_minutes",
+                "contains": [],
+                "description": "Optional. Minutes back from now for processes and events; default 60, at most 60480 (42 days)."
+            }
+        ],
+        "output_spec": [
+            {
+                "name": "status",
+                "contains": [],
+                "metadata": {},
+                "datapaths": [],
+                "deduplicate": false,
+                "description": "success (every section read), partial (host found, some live sections not available), not_found, or error."
+            },
+            {
+                "name": "host_found",
+                "contains": [],
+                "metadata": {},
+                "datapaths": [],
+                "deduplicate": false,
+                "description": "True when Tehtris has an endpoint with this exact hostname."
+            },
+            {
+                "name": "os",
+                "contains": [],
+                "metadata": {},
+                "datapaths": [],
+                "deduplicate": false,
+                "description": "OS name, release and version, from system info or the inventory."
+            },
+            {
+                "name": "agent_last_seen",
+                "contains": [],
+                "metadata": {},
+                "datapaths": [],
+                "deduplicate": false,
+                "description": "When the Tehtris agent last reported (inventory lastSeen)."
+            },
+            {
+                "name": "isolation_state",
+                "contains": [],
+                "metadata": {},
+                "datapaths": [],
+                "deduplicate": false,
+                "description": "isolated, not isolated, or unknown (agent offline or no state returned)."
+            },
+            {
+                "name": "process_count",
+                "contains": [],
+                "metadata": {},
+                "datapaths": [],
+                "deduplicate": false,
+                "description": "Processes alive in the window."
+            },
+            {
+                "name": "connection_count",
+                "contains": [],
+                "metadata": {},
+                "datapaths": [],
+                "deduplicate": false,
+                "description": "Live network connections."
+            },
+            {
+                "name": "software_count",
+                "contains": [],
+                "metadata": {},
+                "datapaths": [],
+                "deduplicate": false,
+                "description": "Installed software entries."
+            },
+            {
+                "name": "event_count",
+                "contains": [],
+                "metadata": {},
+                "datapaths": [],
+                "deduplicate": false,
+                "description": "Tehtris events since the window start."
+            },
+            {
+                "name": "summary",
+                "contains": [],
+                "metadata": {},
+                "datapaths": [],
+                "deduplicate": false,
+                "description": "Three-line text summary, for a parent playbook or a prompt."
+            }
+        ],
+        "playbook_type": "data",
+        "python_version": "3.13",
+        "schema": "5.0.24",
+        "version": "8.6.0.530",
+        "playbook_trigger": "artifact_created"
+    },
+    "create_time": "2026-09-30T02:01:19.422972Z",
+    "draft_mode": false,
+    "labels": [
+        "*"
+    ],
+    "tags": [
+        "tehtris_edr",
+        "uc16",
+        "posture"
+    ]
+}

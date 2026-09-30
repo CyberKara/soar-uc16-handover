@@ -1,0 +1,2090 @@
+{
+    "appid": "bf34e3e5-c6da-49b0-8dbc-cd4f2e080191",
+    "name": "Tehtris EDR",
+    "description": "Tehtris XDR/EDR integration: host isolation, file quarantine and restore, plus read-only endpoint security posture (inventory detail, isolation status, process listing, system information, live network activity, installed software and file details). Local fork of the Splunk-published Tehtris app v1.0.1, extended for UC16.",
+    "type": "network security",
+    "product_vendor": "Tehtris",
+    "logo": "logo.svg",
+    "logo_dark": "logo_dark.svg",
+    "product_name": "Tehtris",
+    "python_version": "3.13",
+    "fips_compliant": true,
+    "product_version_regex": ".*",
+    "publisher": "Ted",
+    "contributors": [
+        {
+            "name": "Bartosz Debek"
+        }
+    ],
+    "license": "Apache-2.0; portions Copyright (c) Splunk, 2024-2026",
+    "app_version": "1.2.1",
+    "utctime_updated": "2026-09-08T00:00:00.000000Z",
+    "package_name": "phantom_tehtris",
+    "main_module": "tehtris_connector.py",
+    "min_phantom_version": "6.3.0",
+    "app_wizard_version": "1.0.0",
+    "configuration": {
+        "base_url": {
+            "data_type": "string",
+            "description": "Tehtris XDR base url",
+            "required": true,
+            "order": 0
+        },
+        "api_key": {
+            "data_type": "password",
+            "description": "Tehtris XDR api key",
+            "required": true,
+            "order": 1
+        },
+        "verify_server_cert": {
+            "data_type": "boolean",
+            "description": "Verify server SSL certificate",
+            "default": true,
+            "order": 2
+        }
+    },
+    "actions": [
+        {
+            "action": "test connectivity",
+            "identifier": "test_connectivity",
+            "description": "Validate the asset configuration for connectivity using supplied configuration",
+            "verbose": "",
+            "type": "test",
+            "read_only": true,
+            "parameters": {},
+            "output": [],
+            "versions": "EQ(*)"
+        },
+        {
+            "action": "get events",
+            "identifier": "get_events",
+            "description": "Fetch XDR events",
+            "verbose": "",
+            "type": "investigate",
+            "read_only": true,
+            "parameters": {
+                "from_date": {
+                    "description": "Seconds since EPOCH in UTC timezone of the starting date from when fetch the events.",
+                    "data_type": "numeric",
+                    "required": true,
+                    "primary": true,
+                    "order": 1
+                },
+                "to_date": {
+                    "description": "Seconds since EPOCH in UTC timezone of the ending date to fetch the events. Leave blank to fetch events until now",
+                    "data_type": "numeric",
+                    "required": false,
+                    "primary": true,
+                    "order": 2
+                },
+                "limit": {
+                    "description": "Page size used while paging through events, 1 to 1000 (Tehtris' maximum). Defaults to 100.",
+                    "data_type": "numeric",
+                    "required": false,
+                    "primary": true,
+                    "order": 3
+                },
+                "offset": {
+                    "description": "Number of events to skip before starting to collect the result set.",
+                    "data_type": "numeric",
+                    "required": false,
+                    "primary": true,
+                    "order": 4
+                },
+                "filter_id": {
+                    "description": "The Filter ID used to retrieve events, if no filterId is specified in query the first filter Id store with API Key is used.",
+                    "data_type": "string",
+                    "required": false,
+                    "primary": true,
+                    "order": 5
+                },
+                "hostname": {
+                    "description": "Hostname to filter results by",
+                    "data_type": "string",
+                    "required": true,
+                    "primary": true,
+                    "order": 0,
+                    "contains": [
+                        "host name"
+                    ]
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.status",
+                    "data_type": "string",
+                    "example_values": [
+                        "success",
+                        "failed"
+                    ]
+                },
+                {
+                    "data_path": "action_result.summary.num_events",
+                    "data_type": "string",
+                    "example_values": [
+                        "10"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.id",
+                    "data_type": "string",
+                    "column_name": "id",
+                    "column_order": 0
+                },
+                {
+                    "data_path": "action_result.data.*.lvl",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.pid",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.tag",
+                    "data_type": "string",
+                    "column_name": "tag",
+                    "column_order": 1
+                },
+                {
+                    "data_path": "action_result.data.*.uid",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.os__",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.path",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.ppid",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.time",
+                    "data_type": "string",
+                    "column_name": "time",
+                    "column_order": 2
+                },
+                {
+                    "data_path": "action_result.data.*.ipDst",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.ipSrc",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.rflId",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.egKBId",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.module",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.action",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.sha256",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.threat.framework",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.threat.id",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.threat.name",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.uuid",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.cmdline",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.mitre",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.tehtris.file.hash.sha256",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.tehtris.file.hash.original",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.tehtris.host.id.*",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.tehtris.host.name.*",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.tehtris.user.name.*",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.tehtris.even.ingested",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.tehtris.source.ip",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.tehtris.process.pid",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.tehtris.process.parent.pid",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.tehtris.process.executable",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.tehtris.process.command_line",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.tehtris.groupIds.*",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.tehtris.enrichment.tags.*",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.tehtris.destination.ip",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.domain",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.location",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.username",
+                    "data_type": "string",
+                    "column_name": "username",
+                    "column_order": 3
+                },
+                {
+                    "data_path": "action_result.data.*.eventName",
+                    "data_type": "string",
+                    "column_name": "event name",
+                    "column_order": 4
+                },
+                {
+                    "data_path": "action_result.data.*.hostname__",
+                    "data_type": "string",
+                    "column_name": "hostname",
+                    "column_order": 5
+                },
+                {
+                    "data_path": "action_result.data.*.description",
+                    "data_type": "string",
+                    "column_name": "description",
+                    "column_order": 6
+                },
+                {
+                    "data_path": "action_result.data.*.os_server__",
+                    "data_type": "boolean"
+                },
+                {
+                    "data_path": "action_result.data.*.submodule__",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.os_release__",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.os_version__",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.fileVersion__",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.productName__",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.pCreateDatetime",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.publisherName__",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.signatureType__",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.os_architecture__",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.signatureStatus__",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.originalFilename__",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.parameter.from_date",
+                    "data_type": "numeric"
+                },
+                {
+                    "data_path": "action_result.parameter.to_date",
+                    "data_type": "numeric"
+                },
+                {
+                    "data_path": "action_result.parameter.limit",
+                    "data_type": "numeric"
+                },
+                {
+                    "data_path": "action_result.parameter.offset",
+                    "data_type": "numeric"
+                },
+                {
+                    "data_path": "action_result.parameter.filter_id",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.parameter.hostname",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.message",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "summary.total_objects_successful",
+                    "data_type": "numeric"
+                },
+                {
+                    "data_path": "summary.total_objects",
+                    "data_type": "numeric"
+                }
+            ],
+            "render": {
+                "width": 12,
+                "title": "Get events",
+                "type": "table",
+                "height": 5
+            },
+            "versions": "EQ(*)"
+        },
+        {
+            "action": "send for isolation",
+            "identifier": "send_for_isolation",
+            "description": "Send a host to the isolation module",
+            "verbose": "The hostname must match an enrolled endpoint exactly (Tehtris' inventory search matches substrings, so only an exact, case-insensitive match is used). When several endpoints share the hostname (for example a re-installed agent) the action is refused and lists their uuids. <b>summary.applied</b> is true when Tehtris accepted the request for a connected agent, and false when the agent is offline and the host will be isolated once it reconnects. Confirm the result with <b>get isolation status</b>.",
+            "type": "contain",
+            "read_only": false,
+            "parameters": {
+                "hostname": {
+                    "description": "Hostname to be sent for isolation",
+                    "data_type": "string",
+                    "required": true,
+                    "primary": true,
+                    "order": 0,
+                    "contains": [
+                        "host name"
+                    ]
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.status",
+                    "data_type": "string",
+                    "example_values": [
+                        "success",
+                        "failed"
+                    ],
+                    "column_name": "Status",
+                    "column_order": 0
+                },
+                {
+                    "data_path": "action_result.summary.result",
+                    "data_type": "string",
+                    "example_values": [
+                        "Sent the request to isolate ws-finance-01 (uuid ffdf773d-b124-4387-b772-a87ec08640c2)"
+                    ]
+                },
+                {
+                    "data_path": "action_result.summary.applied",
+                    "data_type": "boolean",
+                    "example_values": [
+                        true,
+                        false
+                    ]
+                },
+                {
+                    "data_path": "action_result.parameter.hostname",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.message",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "summary.total_objects_successful",
+                    "data_type": "numeric"
+                },
+                {
+                    "data_path": "summary.total_objects",
+                    "data_type": "numeric"
+                }
+            ],
+            "versions": "EQ(*)",
+            "undo": "remove from isolation"
+        },
+        {
+            "action": "remove from isolation",
+            "identifier": "remove_from_isolation",
+            "description": "Remove a host from isolation",
+            "verbose": "The hostname must match an enrolled endpoint exactly (Tehtris' inventory search matches substrings, so only an exact, case-insensitive match is used). When several endpoints share the hostname (for example a re-installed agent) the action is refused and lists their uuids. <b>summary.applied</b> is true when Tehtris accepted the request for a connected agent, and false when the agent is offline and the host will be released once it reconnects. Confirm the result with <b>get isolation status</b>.",
+            "type": "contain",
+            "read_only": false,
+            "parameters": {
+                "hostname": {
+                    "description": "Hostname to be removed from isolation",
+                    "data_type": "string",
+                    "required": true,
+                    "primary": true,
+                    "order": 0,
+                    "contains": [
+                        "host name"
+                    ]
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.status",
+                    "data_type": "string",
+                    "example_values": [
+                        "success",
+                        "failed"
+                    ],
+                    "column_name": "Status",
+                    "column_order": 0
+                },
+                {
+                    "data_path": "action_result.summary.result",
+                    "data_type": "string",
+                    "example_values": [
+                        "Sent the request to release from isolation ws-finance-01 (uuid ffdf773d-b124-4387-b772-a87ec08640c2)"
+                    ]
+                },
+                {
+                    "data_path": "action_result.summary.applied",
+                    "data_type": "boolean",
+                    "example_values": [
+                        true,
+                        false
+                    ]
+                },
+                {
+                    "data_path": "action_result.parameter.hostname",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.message",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "summary.total_objects_successful",
+                    "data_type": "numeric"
+                },
+                {
+                    "data_path": "summary.total_objects",
+                    "data_type": "numeric"
+                }
+            ],
+            "versions": "EQ(*)",
+            "undo": "send for isolation"
+        },
+        {
+            "action": "list processes",
+            "identifier": "list_processes",
+            "description": "Get process tree from a process",
+            "verbose": "",
+            "type": "investigate",
+            "read_only": true,
+            "parameters": {
+                "hostname": {
+                    "description": "Hostname",
+                    "data_type": "string",
+                    "required": true,
+                    "primary": true,
+                    "order": 0,
+                    "contains": [
+                        "host name"
+                    ]
+                },
+                "create_time": {
+                    "description": "Local created time of the process",
+                    "data_type": "string",
+                    "required": true,
+                    "primary": true,
+                    "order": 1
+                },
+                "pid": {
+                    "description": "Database id of the process to use to build the tree",
+                    "data_type": "string",
+                    "required": true,
+                    "primary": true,
+                    "order": 2
+                },
+                "number_of_parents": {
+                    "description": "Number of parents to retrieve",
+                    "data_type": "numeric",
+                    "required": true,
+                    "primary": true,
+                    "order": 3
+                },
+                "limit": {
+                    "description": "Maximum number of results",
+                    "data_type": "numeric",
+                    "required": true,
+                    "primary": true,
+                    "order": 4
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.status",
+                    "data_type": "string",
+                    "example_values": [
+                        "success",
+                        "failed"
+                    ]
+                },
+                {
+                    "data_path": "action_result.summary.num_events",
+                    "data_type": "string",
+                    "example_values": [
+                        "10"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.id",
+                    "data_type": "string",
+                    "column_name": "id",
+                    "column_order": 0
+                },
+                {
+                    "data_path": "action_result.data.*.pid",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.uid",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.ppid",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.cmdline",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.created",
+                    "data_type": "string",
+                    "column_name": "created",
+                    "column_order": 1
+                },
+                {
+                    "data_path": "action_result.data.*.logonId",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.stopped",
+                    "data_type": "string",
+                    "column_name": "stopped",
+                    "column_order": 2
+                },
+                {
+                    "data_path": "action_result.data.*.binaries.*.md5",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.binaries.*.flag",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.binaries.*.path",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.binaries.*.sha1",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.binaries.*.size",
+                    "data_type": "numeric"
+                },
+                {
+                    "data_path": "action_result.data.*.binaries.*.tags",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.binaries.*.atime",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.binaries.*.ctime",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.binaries.*.mtime",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.binaries.*.sha256",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.binaries.*.avScore",
+                    "data_type": "numeric"
+                },
+                {
+                    "data_path": "action_result.data.*.binaries.*.avTotal",
+                    "data_type": "numeric"
+                },
+                {
+                    "data_path": "action_result.data.*.binaries.*.lastSeen",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.binaries.*.malicious",
+                    "data_type": "numeric"
+                },
+                {
+                    "data_path": "action_result.data.*.binaries.*.lastUpdate",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.binaries.*.signatures.*.C",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.binaries.*.signatures.*.L",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.binaries.*.signatures.*.O",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.binaries.*.signatures.*.S",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.binaries.*.signatures.*.CN",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.binaries.*.signatures.*.OU",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.binaries.*.signatures.*.type",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.binaries.*.signatures.*.notAfter",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.binaries.*.signatures.*.notBefore",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.binaries.*.signatures.*.issuers_fp.*",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.binaries.*.signatures.*.fingerprint",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.binaries.*.remediation",
+                    "data_type": "numeric"
+                },
+                {
+                    "data_path": "action_result.data.*.binaries.*.sandboxScore",
+                    "data_type": "numeric"
+                },
+                {
+                    "data_path": "action_result.data.*.bootTime",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.children.*",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.parentId",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.username",
+                    "data_type": "string",
+                    "column_name": "username",
+                    "column_order": 3
+                },
+                {
+                    "data_path": "action_result.data.*.domainName",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.processFlag",
+                    "data_type": "numeric"
+                },
+                {
+                    "data_path": "action_result.data.*.remediation",
+                    "data_type": "numeric"
+                },
+                {
+                    "data_path": "action_result.data.*.createdServer",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.stoppedServer",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.parameter.hostname",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.parameter.create_time",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.parameter.pid",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.parameter.number_of_parents",
+                    "data_type": "numeric"
+                },
+                {
+                    "data_path": "action_result.parameter.limit",
+                    "data_type": "numeric"
+                },
+                {
+                    "data_path": "action_result.message",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "summary.total_objects_successful",
+                    "data_type": "numeric"
+                },
+                {
+                    "data_path": "summary.total_objects",
+                    "data_type": "numeric"
+                }
+            ],
+            "render": {
+                "width": 12,
+                "title": "List processes",
+                "type": "table",
+                "height": 5
+            },
+            "versions": "EQ(*)"
+        },
+        {
+            "action": "update tag",
+            "identifier": "update_tag",
+            "description": "Set an endpoint's tags (may replace its existing tags)",
+            "verbose": "The hostname must match an enrolled endpoint exactly (Tehtris' inventory search matches substrings, so only an exact, case-insensitive match is used). <b>Warning:</b> Tehtris takes one tag string per call and does not document whether it replaces or adds to the endpoint's existing tags, so treat this action as able to overwrite them: read the current tags with <b>get host detail</b> first and include any you want to keep. Refused when several endpoints share the hostname.",
+            "type": "contain",
+            "read_only": false,
+            "parameters": {
+                "hostname": {
+                    "description": "Hostname",
+                    "data_type": "string",
+                    "required": true,
+                    "primary": true,
+                    "order": 0,
+                    "contains": [
+                        "host name"
+                    ]
+                },
+                "tag": {
+                    "description": "Tag string in Tehtris' 'XXX_tags' pattern (the tenant trigram, an underscore, then the tags); may replace the endpoint's existing tags",
+                    "data_type": "string",
+                    "required": true,
+                    "primary": true,
+                    "order": 1
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.status",
+                    "data_type": "string",
+                    "example_values": [
+                        "success",
+                        "failed"
+                    ],
+                    "column_name": "Status",
+                    "column_order": 0
+                },
+                {
+                    "data_path": "action_result.summary.result",
+                    "data_type": "string",
+                    "example_values": [
+                        "Set tags 'ABC_isolated' on ws-finance-01 (uuid ffdf773d-b124-4387-b772-a87ec08640c2); this may have replaced the endpoint's existing tags"
+                    ]
+                },
+                {
+                    "data_path": "action_result.parameter.hostname",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.parameter.tag",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.message",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "summary.total_objects_successful",
+                    "data_type": "numeric"
+                },
+                {
+                    "data_path": "summary.total_objects",
+                    "data_type": "numeric"
+                }
+            ],
+            "versions": "EQ(*)"
+        },
+        {
+            "action": "create app policy",
+            "identifier": "create_app_policy",
+            "description": "Create new application policy based on sha256",
+            "verbose": "Creates one application policy with a single Sha256 rule. Tehtris scopes an application policy by <b>appliance</b>: the request carries appliance ids and no per-endpoint field, so the policy applies to every endpoint on the appliances the listed hosts connect to, not only to those hosts. The hostname must match an enrolled endpoint exactly (Tehtris' inventory search matches substrings, so only an exact, case-insensitive match is used).",
+            "type": "contain",
+            "read_only": false,
+            "parameters": {
+                "hostnames": {
+                    "description": "Comma separated hostnames",
+                    "data_type": "string",
+                    "required": true,
+                    "primary": true,
+                    "order": 0,
+                    "allow_list": true,
+                    "contains": [
+                        "host name"
+                    ]
+                },
+                "sha256": {
+                    "description": "Comma separated sha256 values",
+                    "data_type": "string",
+                    "required": true,
+                    "primary": true,
+                    "order": 1,
+                    "allow_list": true,
+                    "contains": [
+                        "sha256"
+                    ]
+                },
+                "order": {
+                    "description": "Order the rule applies to a matching binary",
+                    "data_type": "string",
+                    "required": true,
+                    "primary": true,
+                    "order": 2,
+                    "value_list": [
+                        "WHITELIST",
+                        "ANALYZE",
+                        "RESUME",
+                        "ALERT",
+                        "KILL",
+                        "QUARANTINE"
+                    ]
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.status",
+                    "data_type": "string",
+                    "example_values": [
+                        "success",
+                        "failed"
+                    ],
+                    "column_name": "Status",
+                    "column_order": 0
+                },
+                {
+                    "data_path": "action_result.summary.result",
+                    "data_type": "string",
+                    "example_values": [
+                        "Successfully posted new app policy for ffdf773d-b124-4387-b772-a87ec08640c2"
+                    ]
+                },
+                {
+                    "data_path": "action_result.parameter.hostnames",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.parameter.sha256",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.parameter.order",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.message",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "summary.total_objects_successful",
+                    "data_type": "numeric"
+                },
+                {
+                    "data_path": "summary.total_objects",
+                    "data_type": "numeric"
+                }
+            ],
+            "versions": "EQ(*)"
+        },
+        {
+            "action": "get isolation status",
+            "identifier": "get_isolation_status",
+            "description": "Get the current EDR isolation state of a host",
+            "verbose": "Reads the isolation flag for the host (Tehtris' IsolationStatus reply, <b>status</b> boolean). When no state comes back (HTTP 204) <b>summary.isolated</b> is null and the payload is in <b>raw_json</b>. Treat null as <i>unknown</i>, never as <i>not isolated</i>.",
+            "type": "investigate",
+            "read_only": true,
+            "parameters": {
+                "hostname": {
+                    "description": "Hostname to read isolation status for",
+                    "data_type": "string",
+                    "contains": [
+                        "host name"
+                    ],
+                    "required": true,
+                    "primary": true,
+                    "order": 0
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.status",
+                    "data_type": "string",
+                    "example_values": [
+                        "success",
+                        "failed"
+                    ],
+                    "column_name": "Status",
+                    "column_order": 0
+                },
+                {
+                    "data_path": "action_result.parameter.hostname",
+                    "data_type": "string",
+                    "contains": [
+                        "host name"
+                    ],
+                    "column_name": "Hostname",
+                    "column_order": 1
+                },
+                {
+                    "data_path": "action_result.summary.isolated",
+                    "data_type": "boolean",
+                    "example_values": [
+                        true,
+                        false
+                    ],
+                    "column_name": "Isolated",
+                    "column_order": 2
+                },
+                {
+                    "data_path": "action_result.summary.hostname",
+                    "data_type": "string",
+                    "contains": [
+                        "host name"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.status",
+                    "data_type": "boolean",
+                    "example_values": [
+                        true,
+                        false
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.raw_json",
+                    "data_type": "string",
+                    "example_values": [
+                        "{\"status\": true}"
+                    ]
+                },
+                {
+                    "data_path": "action_result.message",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "summary.total_objects_successful",
+                    "data_type": "numeric"
+                },
+                {
+                    "data_path": "summary.total_objects",
+                    "data_type": "numeric"
+                }
+            ],
+            "versions": "EQ(*)"
+        },
+        {
+            "action": "get host detail",
+            "identifier": "get_host_detail",
+            "description": "Get EDR inventory detail for a host",
+            "verbose": "Exposes the inventory lookup the other host-scoped actions perform internally, returning every endpoint named exactly <b>hostname</b> (a re-installed agent keeps its hostname under a new uuid), most recently seen first; the summary describes that first one. Fields follow Tehtris' inventory schema; <b>os</b> and <b>versions</b> are free-form objects, available in <b>raw_json</b>. When no endpoint has that exact name the action still succeeds, with <b>total_hosts</b> 0 and the not-found reason as its message, so a playbook can tell 'no such host' from a failed call; every other host-scoped action fails on an unknown host.",
+            "type": "investigate",
+            "read_only": true,
+            "parameters": {
+                "hostname": {
+                    "description": "Hostname to look up in the EDR inventory",
+                    "data_type": "string",
+                    "contains": [
+                        "host name"
+                    ],
+                    "required": true,
+                    "primary": true,
+                    "order": 0
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.status",
+                    "data_type": "string",
+                    "example_values": [
+                        "success",
+                        "failed"
+                    ],
+                    "column_name": "Status",
+                    "column_order": 0
+                },
+                {
+                    "data_path": "action_result.parameter.hostname",
+                    "data_type": "string",
+                    "contains": [
+                        "host name"
+                    ],
+                    "column_name": "Hostname",
+                    "column_order": 1
+                },
+                {
+                    "data_path": "action_result.summary.total_hosts",
+                    "data_type": "numeric",
+                    "column_name": "Hosts",
+                    "column_order": 2
+                },
+                {
+                    "data_path": "action_result.summary.uuid",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.summary.appliance_id",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.uuid",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.applianceId",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.hostname",
+                    "data_type": "string",
+                    "contains": [
+                        "host name"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.domain",
+                    "data_type": "string",
+                    "contains": [
+                        "domain"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.tags",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.firstSeen",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.lastSeen",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.localIp",
+                    "data_type": "string",
+                    "contains": [
+                        "ip"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.remoteIp",
+                    "data_type": "string",
+                    "contains": [
+                        "ip"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.configUuid",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.raw_json",
+                    "data_type": "string",
+                    "example_values": [
+                        "{\"uuid\": \"ffdf773d-b124-4387-b772-a87ec08640c2\", \"hostname\": \"ws-finance-01\", \"applianceId\": 1}"
+                    ]
+                },
+                {
+                    "data_path": "action_result.message",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "summary.total_objects_successful",
+                    "data_type": "numeric"
+                },
+                {
+                    "data_path": "summary.total_objects",
+                    "data_type": "numeric"
+                }
+            ],
+            "versions": "EQ(*)"
+        },
+        {
+            "action": "get processes",
+            "identifier": "get_processes",
+            "description": "List processes seen on a host over a time window",
+            "verbose": "Unlike <b>list processes</b>, which builds a tree around a seed pid and requires one, this action returns a listing and needs no seed. Bound it with <b>time_from</b>/<b>time_to</b> and <b>limit</b>. Tehtris serves this listing through a cursor and the action reads its first page only, so <b>limit</b> caps the result. Fields follow Tehtris' process schema; <b>raw_json</b> carries the untouched record.",
+            "type": "investigate",
+            "read_only": true,
+            "parameters": {
+                "hostname": {
+                    "description": "Hostname to list processes for",
+                    "data_type": "string",
+                    "contains": [
+                        "host name"
+                    ],
+                    "required": true,
+                    "primary": true,
+                    "order": 0
+                },
+                "time_from": {
+                    "description": "Start of the window (epoch seconds)",
+                    "data_type": "string",
+                    "required": false,
+                    "order": 1
+                },
+                "time_to": {
+                    "description": "End of the window (epoch seconds)",
+                    "data_type": "string",
+                    "required": false,
+                    "order": 2
+                },
+                "limit": {
+                    "description": "Maximum number of processes to return",
+                    "data_type": "numeric",
+                    "required": false,
+                    "default": 500,
+                    "order": 3
+                },
+                "username": {
+                    "description": "Filter by process owner",
+                    "data_type": "string",
+                    "contains": [
+                        "user name"
+                    ],
+                    "required": false,
+                    "order": 4
+                },
+                "path": {
+                    "description": "Filter by executable path",
+                    "data_type": "string",
+                    "contains": [
+                        "file path"
+                    ],
+                    "required": false,
+                    "order": 5
+                },
+                "cmdline": {
+                    "description": "Filter by command line",
+                    "data_type": "string",
+                    "required": false,
+                    "order": 6
+                },
+                "sha256": {
+                    "description": "Filter by binary SHA-256",
+                    "data_type": "string",
+                    "contains": [
+                        "sha256"
+                    ],
+                    "required": false,
+                    "order": 7
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.status",
+                    "data_type": "string",
+                    "example_values": [
+                        "success",
+                        "failed"
+                    ],
+                    "column_name": "Status",
+                    "column_order": 0
+                },
+                {
+                    "data_path": "action_result.parameter.hostname",
+                    "data_type": "string",
+                    "contains": [
+                        "host name"
+                    ],
+                    "column_name": "Hostname",
+                    "column_order": 1
+                },
+                {
+                    "data_path": "action_result.parameter.time_from",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.parameter.time_to",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.parameter.limit",
+                    "data_type": "numeric"
+                },
+                {
+                    "data_path": "action_result.parameter.username",
+                    "data_type": "string",
+                    "contains": [
+                        "user name"
+                    ]
+                },
+                {
+                    "data_path": "action_result.parameter.path",
+                    "data_type": "string",
+                    "contains": [
+                        "file path"
+                    ]
+                },
+                {
+                    "data_path": "action_result.parameter.cmdline",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.parameter.sha256",
+                    "data_type": "string",
+                    "contains": [
+                        "sha256"
+                    ]
+                },
+                {
+                    "data_path": "action_result.summary.num_processes",
+                    "data_type": "numeric",
+                    "column_name": "Processes",
+                    "column_order": 2
+                },
+                {
+                    "data_path": "action_result.data.*.pid",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.ppid",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.cmdline",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.username",
+                    "data_type": "string",
+                    "contains": [
+                        "user name"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.created",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.binaries.*.path",
+                    "data_type": "string",
+                    "contains": [
+                        "file path"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.binaries.*.sha256",
+                    "data_type": "string",
+                    "contains": [
+                        "sha256"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.raw_json",
+                    "data_type": "string",
+                    "example_values": [
+                        "{\"status\": true}"
+                    ]
+                },
+                {
+                    "data_path": "action_result.message",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "summary.total_objects_successful",
+                    "data_type": "numeric"
+                },
+                {
+                    "data_path": "summary.total_objects",
+                    "data_type": "numeric"
+                }
+            ],
+            "versions": "EQ(*)"
+        },
+        {
+            "action": "get system info",
+            "identifier": "get_system_info",
+            "description": "Get the operating system details of a host",
+            "verbose": "Live OS details from the EDR agent: <b>name</b>, <b>type</b> (desktop/server), <b>architecture</b>, <b>release</b> and <b>version</b>. Tehtris' reference lists only 'windows' as a name, so a host on another OS may answer HTTP 501 (not implemented on the endpoint). The payload is also available in <b>raw_json</b>.",
+            "type": "investigate",
+            "read_only": true,
+            "parameters": {
+                "hostname": {
+                    "description": "Hostname to fetch system information for",
+                    "data_type": "string",
+                    "contains": [
+                        "host name"
+                    ],
+                    "required": true,
+                    "primary": true,
+                    "order": 0
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.status",
+                    "data_type": "string",
+                    "example_values": [
+                        "success",
+                        "failed"
+                    ],
+                    "column_name": "Status",
+                    "column_order": 0
+                },
+                {
+                    "data_path": "action_result.parameter.hostname",
+                    "data_type": "string",
+                    "contains": [
+                        "host name"
+                    ],
+                    "column_name": "Hostname",
+                    "column_order": 1
+                },
+                {
+                    "data_path": "action_result.summary.total_objects",
+                    "data_type": "numeric"
+                },
+                {
+                    "data_path": "action_result.summary.hostname",
+                    "data_type": "string",
+                    "contains": [
+                        "host name"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.name",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.type",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.architecture",
+                    "data_type": "numeric"
+                },
+                {
+                    "data_path": "action_result.data.*.release",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.version",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.raw_json",
+                    "data_type": "string",
+                    "example_values": [
+                        "{\"name\": \"windows\", \"type\": \"desktop\", \"architecture\": 64, \"release\": \"10\", \"version\": \"10.0.19045\"}"
+                    ]
+                },
+                {
+                    "data_path": "action_result.message",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "summary.total_objects_successful",
+                    "data_type": "numeric"
+                },
+                {
+                    "data_path": "summary.total_objects",
+                    "data_type": "numeric"
+                }
+            ],
+            "versions": "EQ(*)"
+        },
+        {
+            "action": "get network info",
+            "identifier": "get_network_info",
+            "description": "Get live network activity (netstat) for a host",
+            "verbose": "Live network activity from the EDR agent (Tehtris' netstat call). Each reply names its columns but Tehtris' reference does not list them, so every row is returned with those column names as keys and also in <b>raw_json</b>. Needs the agent to be connected.",
+            "type": "investigate",
+            "read_only": true,
+            "parameters": {
+                "hostname": {
+                    "description": "Hostname to fetch network activity for",
+                    "data_type": "string",
+                    "contains": [
+                        "host name"
+                    ],
+                    "required": true,
+                    "primary": true,
+                    "order": 0
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.status",
+                    "data_type": "string",
+                    "example_values": [
+                        "success",
+                        "failed"
+                    ],
+                    "column_name": "Status",
+                    "column_order": 0
+                },
+                {
+                    "data_path": "action_result.parameter.hostname",
+                    "data_type": "string",
+                    "contains": [
+                        "host name"
+                    ],
+                    "column_name": "Hostname",
+                    "column_order": 1
+                },
+                {
+                    "data_path": "action_result.summary.num_connections",
+                    "data_type": "numeric",
+                    "column_name": "Connections",
+                    "column_order": 2
+                },
+                {
+                    "data_path": "action_result.summary.hostname",
+                    "data_type": "string",
+                    "contains": [
+                        "host name"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.raw_json",
+                    "data_type": "string",
+                    "example_values": [
+                        "{\"<column name>\": \"<value>\"}"
+                    ]
+                },
+                {
+                    "data_path": "action_result.message",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "summary.total_objects_successful",
+                    "data_type": "numeric"
+                },
+                {
+                    "data_path": "summary.total_objects",
+                    "data_type": "numeric"
+                }
+            ],
+            "versions": "EQ(*)"
+        },
+        {
+            "action": "get file info",
+            "identifier": "get_file_info",
+            "description": "Get hashes, version and signatures of a file on a host",
+            "verbose": "Reads a file's details from the EDR agent (Tehtris' FileInfoData): hashes, original file name, file and product version, and code signatures with their validity. Useful to check a file before quarantining it. When Tehtris returns nothing for the path (HTTP 204), the action succeeds with <b>summary.file_found</b> false. A live call: the EDR agent must be connected, otherwise Tehtris answers 504.",
+            "type": "investigate",
+            "read_only": true,
+            "parameters": {
+                "hostname": {
+                    "description": "Hostname the file is on",
+                    "data_type": "string",
+                    "contains": [
+                        "host name"
+                    ],
+                    "required": true,
+                    "primary": true,
+                    "order": 0
+                },
+                "path": {
+                    "description": "Full path of the file on the host",
+                    "data_type": "string",
+                    "contains": [
+                        "file path"
+                    ],
+                    "required": true,
+                    "primary": true,
+                    "order": 1
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.status",
+                    "data_type": "string",
+                    "example_values": [
+                        "success",
+                        "failed"
+                    ],
+                    "column_name": "Status",
+                    "column_order": 0
+                },
+                {
+                    "data_path": "action_result.parameter.hostname",
+                    "data_type": "string",
+                    "contains": [
+                        "host name"
+                    ],
+                    "column_name": "Hostname",
+                    "column_order": 1
+                },
+                {
+                    "data_path": "action_result.parameter.path",
+                    "data_type": "string",
+                    "contains": [
+                        "file path"
+                    ],
+                    "column_name": "Path",
+                    "column_order": 2
+                },
+                {
+                    "data_path": "action_result.summary.file_found",
+                    "data_type": "boolean",
+                    "example_values": [
+                        true,
+                        false
+                    ],
+                    "column_name": "Found",
+                    "column_order": 3
+                },
+                {
+                    "data_path": "action_result.summary.sha256",
+                    "data_type": "string",
+                    "contains": [
+                        "sha256"
+                    ]
+                },
+                {
+                    "data_path": "action_result.summary.hostname",
+                    "data_type": "string",
+                    "contains": [
+                        "host name"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.path",
+                    "data_type": "string",
+                    "contains": [
+                        "file path"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.sha256",
+                    "data_type": "string",
+                    "contains": [
+                        "sha256"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.sha1",
+                    "data_type": "string",
+                    "contains": [
+                        "sha1"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.md5",
+                    "data_type": "string",
+                    "contains": [
+                        "md5"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.originalFilename",
+                    "data_type": "string",
+                    "contains": [
+                        "file name"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.fileVersion",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.productName",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.signatures.*.publisherName",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.signatures.*.validity",
+                    "data_type": "string",
+                    "example_values": [
+                        "valid",
+                        "invalid",
+                        "unknown"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.signatures.*.type",
+                    "data_type": "string",
+                    "example_values": [
+                        "catalog",
+                        "embedded"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.raw_json",
+                    "data_type": "string",
+                    "example_values": [
+                        "{\"path\": \"C:\\\\Windows\\\\System32\\\\services.exe\", \"sha256\": \"1b2c...\"}"
+                    ]
+                },
+                {
+                    "data_path": "action_result.message",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "summary.total_objects_successful",
+                    "data_type": "numeric"
+                },
+                {
+                    "data_path": "summary.total_objects",
+                    "data_type": "numeric"
+                }
+            ],
+            "versions": "EQ(*)"
+        },
+        {
+            "action": "list software",
+            "identifier": "list_software",
+            "description": "List the software installed on a host",
+            "verbose": "The software list from the EDR agent. Each reply names its columns but Tehtris' reference does not list them, so every row is returned with those column names as keys and also in <b>raw_json</b>. A live call: the EDR agent must be connected, otherwise Tehtris answers 504.",
+            "type": "investigate",
+            "read_only": true,
+            "parameters": {
+                "hostname": {
+                    "description": "Hostname to list software for",
+                    "data_type": "string",
+                    "contains": [
+                        "host name"
+                    ],
+                    "required": true,
+                    "primary": true,
+                    "order": 0
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.status",
+                    "data_type": "string",
+                    "example_values": [
+                        "success",
+                        "failed"
+                    ],
+                    "column_name": "Status",
+                    "column_order": 0
+                },
+                {
+                    "data_path": "action_result.parameter.hostname",
+                    "data_type": "string",
+                    "contains": [
+                        "host name"
+                    ],
+                    "column_name": "Hostname",
+                    "column_order": 1
+                },
+                {
+                    "data_path": "action_result.summary.num_software",
+                    "data_type": "numeric",
+                    "column_name": "Software",
+                    "column_order": 2
+                },
+                {
+                    "data_path": "action_result.summary.hostname",
+                    "data_type": "string",
+                    "contains": [
+                        "host name"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.raw_json",
+                    "data_type": "string",
+                    "example_values": [
+                        "{\"<column name>\": \"<value>\"}"
+                    ]
+                },
+                {
+                    "data_path": "action_result.message",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "summary.total_objects_successful",
+                    "data_type": "numeric"
+                },
+                {
+                    "data_path": "summary.total_objects",
+                    "data_type": "numeric"
+                }
+            ],
+            "versions": "EQ(*)"
+        },
+        {
+            "action": "list quarantined files",
+            "identifier": "list_quarantined_files",
+            "description": "List the files in quarantine on a host",
+            "verbose": "One record per quarantined file, carrying its <b>quarantinePath</b>: the path Tehtris stored the file under, which is what <b>restore file</b> takes (not the file's original path). A live call: the EDR agent must be connected, otherwise Tehtris answers 504.",
+            "type": "investigate",
+            "read_only": true,
+            "parameters": {
+                "hostname": {
+                    "description": "Hostname to list quarantined files for",
+                    "data_type": "string",
+                    "contains": [
+                        "host name"
+                    ],
+                    "required": true,
+                    "primary": true,
+                    "order": 0
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.status",
+                    "data_type": "string",
+                    "example_values": [
+                        "success",
+                        "failed"
+                    ],
+                    "column_name": "Status",
+                    "column_order": 0
+                },
+                {
+                    "data_path": "action_result.parameter.hostname",
+                    "data_type": "string",
+                    "contains": [
+                        "host name"
+                    ],
+                    "column_name": "Hostname",
+                    "column_order": 1
+                },
+                {
+                    "data_path": "action_result.summary.num_files",
+                    "data_type": "numeric",
+                    "column_name": "Files",
+                    "column_order": 2
+                },
+                {
+                    "data_path": "action_result.summary.hostname",
+                    "data_type": "string",
+                    "contains": [
+                        "host name"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.quarantinePath",
+                    "data_type": "string",
+                    "contains": [
+                        "tehtris quarantine path"
+                    ],
+                    "column_name": "Quarantine Path",
+                    "column_order": 3
+                },
+                {
+                    "data_path": "action_result.data.*.raw_json",
+                    "data_type": "string",
+                    "example_values": [
+                        "{\"quarantinePath\": \"<path in quarantine>\"}"
+                    ]
+                },
+                {
+                    "data_path": "action_result.message",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "summary.total_objects_successful",
+                    "data_type": "numeric"
+                },
+                {
+                    "data_path": "summary.total_objects",
+                    "data_type": "numeric"
+                }
+            ],
+            "versions": "EQ(*)"
+        },
+        {
+            "action": "quarantine file",
+            "identifier": "quarantine_file",
+            "description": "Move a file on a host into Tehtris quarantine",
+            "verbose": "The hostname must match an enrolled endpoint exactly (Tehtris' inventory search matches substrings, so only an exact, case-insensitive match is used). Refused when several endpoints share the hostname. <b>summary.applied</b> is true when Tehtris accepted the request for a connected agent (HTTP 204), false when the agent is offline and the task is queued (HTTP 202). A 409 means Tehtris refused the request because of a conflict. Undo it with <b>list quarantined files</b> then <b>restore file</b>: the restore takes the file's path in quarantine, not this path. A live call: the EDR agent must be connected, otherwise Tehtris answers 504.",
+            "type": "contain",
+            "read_only": false,
+            "parameters": {
+                "hostname": {
+                    "description": "Hostname the file is on",
+                    "data_type": "string",
+                    "contains": [
+                        "host name"
+                    ],
+                    "required": true,
+                    "primary": true,
+                    "order": 0
+                },
+                "path": {
+                    "description": "Full path of the file to quarantine",
+                    "data_type": "string",
+                    "contains": [
+                        "file path"
+                    ],
+                    "required": true,
+                    "primary": true,
+                    "order": 1
+                },
+                "notification": {
+                    "description": "On Windows, a notification shown to the endpoint user about the remediation (Tehtris does not document the value format; leave blank to send none)",
+                    "data_type": "string",
+                    "required": false,
+                    "order": 2
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.status",
+                    "data_type": "string",
+                    "example_values": [
+                        "success",
+                        "failed"
+                    ],
+                    "column_name": "Status",
+                    "column_order": 0
+                },
+                {
+                    "data_path": "action_result.parameter.hostname",
+                    "data_type": "string",
+                    "contains": [
+                        "host name"
+                    ],
+                    "column_name": "Hostname",
+                    "column_order": 1
+                },
+                {
+                    "data_path": "action_result.parameter.path",
+                    "data_type": "string",
+                    "contains": [
+                        "file path"
+                    ],
+                    "column_name": "Path",
+                    "column_order": 2
+                },
+                {
+                    "data_path": "action_result.parameter.notification",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.summary.result",
+                    "data_type": "string",
+                    "example_values": [
+                        "Sent the request to quarantine C:\\Users\\asmith\\invoice.exe on ws-finance-01 (uuid ffdf773d-b124-4387-b772-a87ec08640c2)"
+                    ]
+                },
+                {
+                    "data_path": "action_result.summary.applied",
+                    "data_type": "boolean",
+                    "example_values": [
+                        true,
+                        false
+                    ]
+                },
+                {
+                    "data_path": "action_result.message",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "summary.total_objects_successful",
+                    "data_type": "numeric"
+                },
+                {
+                    "data_path": "summary.total_objects",
+                    "data_type": "numeric"
+                }
+            ],
+            "versions": "EQ(*)"
+        },
+        {
+            "action": "restore file",
+            "identifier": "restore_file",
+            "description": "Restore a quarantined file on a host",
+            "verbose": "The hostname must match an enrolled endpoint exactly (Tehtris' inventory search matches substrings, so only an exact, case-insensitive match is used). Refused when several endpoints share the hostname. <b>quarantine_path</b> is the path the file has in quarantine, as returned by <b>list quarantined files</b> (<b>quarantinePath</b>) - not the file's original path. <b>summary.restored_path</b> is where Tehtris put the file back. <b>summary.applied</b> is false when the agent is offline and the task is queued (HTTP 202). A live call: the EDR agent must be connected, otherwise Tehtris answers 504.",
+            "type": "correct",
+            "read_only": false,
+            "parameters": {
+                "hostname": {
+                    "description": "Hostname the file is on",
+                    "data_type": "string",
+                    "contains": [
+                        "host name"
+                    ],
+                    "required": true,
+                    "primary": true,
+                    "order": 0
+                },
+                "quarantine_path": {
+                    "description": "The file's path in quarantine, from 'list quarantined files' (quarantinePath)",
+                    "data_type": "string",
+                    "contains": [
+                        "tehtris quarantine path"
+                    ],
+                    "required": true,
+                    "primary": true,
+                    "order": 1
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.status",
+                    "data_type": "string",
+                    "example_values": [
+                        "success",
+                        "failed"
+                    ],
+                    "column_name": "Status",
+                    "column_order": 0
+                },
+                {
+                    "data_path": "action_result.parameter.hostname",
+                    "data_type": "string",
+                    "contains": [
+                        "host name"
+                    ],
+                    "column_name": "Hostname",
+                    "column_order": 1
+                },
+                {
+                    "data_path": "action_result.parameter.quarantine_path",
+                    "data_type": "string",
+                    "contains": [
+                        "tehtris quarantine path"
+                    ],
+                    "column_name": "Quarantine Path",
+                    "column_order": 2
+                },
+                {
+                    "data_path": "action_result.summary.restored_path",
+                    "data_type": "string",
+                    "contains": [
+                        "file path"
+                    ],
+                    "column_name": "Restored Path",
+                    "column_order": 3
+                },
+                {
+                    "data_path": "action_result.summary.result",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.summary.applied",
+                    "data_type": "boolean",
+                    "example_values": [
+                        true,
+                        false
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.restoredPath",
+                    "data_type": "string",
+                    "contains": [
+                        "file path"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.raw_json",
+                    "data_type": "string",
+                    "example_values": [
+                        "{\"restoredPath\": \"C:\\\\Users\\\\asmith\\\\invoice.exe\"}"
+                    ]
+                },
+                {
+                    "data_path": "action_result.message",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "summary.total_objects_successful",
+                    "data_type": "numeric"
+                },
+                {
+                    "data_path": "summary.total_objects",
+                    "data_type": "numeric"
+                }
+            ],
+            "versions": "EQ(*)"
+        }
+    ],
+    "pip313_dependencies": {
+        "wheel": []
+    }
+}

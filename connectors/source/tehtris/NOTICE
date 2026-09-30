@@ -1,0 +1,7 @@
+Splunk SOAR App: Tehtris
+Copyright (c) Splunk, 2024-2026
+
+This connector is a fork of the official Splunk-published app
+`splunk-soar-connectors/tehtris` at v1.0.1 (commit 638383ec, 2026-07-20),
+licensed under Apache-2.0 (see LICENSE). Extended locally with additional
+read-only actions and a host-resolution fix; see README.md for provenance.
