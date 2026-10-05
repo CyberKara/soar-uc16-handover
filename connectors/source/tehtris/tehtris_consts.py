@@ -37,7 +37,17 @@ TEHTRIS_QUARANTINE_ENDPOINT = "/edr/v2/live/{}/{}/remediation/quarantine"
 TEHTRIS_EVENTS_MAX_LIMIT = 1000
 
 # Seconds to wait for each HTTP call (dev-rules FR-05 default); upstream set none.
+# The asset's optional `timeout` field overrides it, up to TEHTRIS_MAX_TIMEOUT.
 TEHTRIS_DEFAULT_TIMEOUT = 30
+TEHTRIS_MAX_TIMEOUT = 300
+
+# Retries on GET/PUT only (dev-rules NFR-03/NFR-20). 429 is listed by the vendor
+# reference on the inventory and processes calls, and every host-scoped action
+# goes through the inventory; a Retry-After header is honoured. 504 is left out
+# on purpose: on /live/ calls it means the agent is not connected.
+TEHTRIS_MAX_RETRIES = 3
+TEHTRIS_RETRY_BACKOFF = 1
+TEHTRIS_RETRY_STATUSES = (429, 500, 502, 503)
 
 # Status codes the vendor API reference documents with a fixed meaning on the
 # host-scoped /edr/v2/live and /edr/v2/data endpoints. Appended to the error

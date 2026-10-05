@@ -1,0 +1,684 @@
+{
+    "blockly": false,
+    "blockly_xml": "<xml></xml>",
+    "category": "Endpoint",
+    "coa": {
+        "data": {
+            "hash": "",
+            "edges": [
+                {
+                    "id": "port_0_to_port_2",
+                    "sourceNode": "0",
+                    "sourcePort": "0_out",
+                    "targetNode": "2",
+                    "targetPort": "2_in"
+                },
+                {
+                    "id": "port_2_to_port_3",
+                    "sourceNode": "2",
+                    "sourcePort": "2_out",
+                    "targetNode": "3",
+                    "targetPort": "3_in"
+                },
+                {
+                    "id": "port_3_to_port_4",
+                    "sourceNode": "3",
+                    "sourcePort": "3_out",
+                    "targetNode": "4",
+                    "targetPort": "4_in"
+                },
+                {
+                    "id": "port_4_to_port_5",
+                    "sourceNode": "4",
+                    "sourcePort": "4_out",
+                    "targetNode": "5",
+                    "targetPort": "5_in"
+                },
+                {
+                    "id": "port_5_to_port_6",
+                    "sourceNode": "5",
+                    "sourcePort": "5_out",
+                    "targetNode": "6",
+                    "targetPort": "6_in"
+                },
+                {
+                    "id": "port_6_to_port_7",
+                    "sourceNode": "6",
+                    "sourcePort": "6_out",
+                    "targetNode": "7",
+                    "targetPort": "7_in"
+                },
+                {
+                    "id": "port_7_to_port_8",
+                    "sourceNode": "7",
+                    "sourcePort": "7_out",
+                    "targetNode": "8",
+                    "targetPort": "8_in"
+                },
+                {
+                    "id": "port_8_to_port_9",
+                    "sourceNode": "8",
+                    "sourcePort": "8_out",
+                    "targetNode": "9",
+                    "targetPort": "9_in"
+                },
+                {
+                    "id": "port_9_to_port_10",
+                    "sourceNode": "9",
+                    "sourcePort": "9_out",
+                    "targetNode": "10",
+                    "targetPort": "10_in"
+                },
+                {
+                    "id": "port_10_to_port_11",
+                    "sourceNode": "10",
+                    "sourcePort": "10_out",
+                    "targetNode": "11",
+                    "targetPort": "11_in"
+                },
+                {
+                    "id": "port_11_to_port_1",
+                    "sourceNode": "11",
+                    "sourcePort": "11_out",
+                    "targetNode": "1",
+                    "targetPort": "1_in"
+                }
+            ],
+            "nodes": {
+                "0": {
+                    "x": 190,
+                    "y": -6.394884621840902e-14,
+                    "id": "0",
+                    "data": {
+                        "id": "0",
+                        "type": "start",
+                        "advanced": {
+                            "join": []
+                        },
+                        "functionName": "on_start"
+                    },
+                    "type": "start",
+                    "errors": {},
+                    "warnings": {}
+                },
+                "1": {
+                    "x": 190,
+                    "y": 1650,
+                    "id": "1",
+                    "data": {
+                        "id": "1",
+                        "type": "end",
+                        "advanced": {
+                            "join": []
+                        },
+                        "functionId": 11,
+                        "functionName": "on_finish"
+                    },
+                    "type": "end",
+                    "errors": {},
+                    "userCode": "    ################################################################################\n    ################################################################################\n    ################################################################################\n\n    # Populate the generated `output` dict; the save after Custom Code End emits it.\n    # No block recorded an outcome (the run stopped early): report error.\n    raw_output = phantom.get_run_data(key=\"playbook_output\")\n    if raw_output:\n        output.update(json.loads(raw_output))\n    # The 8.6 VPE initialises every output above to [] (8.5 wrote None), so an\n    # output no block set is normalised to null here, whichever form a save wrote.\n    for key, value in output.items():\n        if value == []:\n            output[key] = None\n    if output[\"status\"] is None:\n        output[\"status\"] = \"error\"\n\n    ################################################################################\n    ################################################################################\n    ################################################################################\n",
+                    "warnings": {}
+                },
+                "2": {
+                    "x": 190,
+                    "y": 150,
+                    "id": "2",
+                    "data": {
+                        "id": "2",
+                        "type": "code",
+                        "advanced": {
+                            "join": [],
+                            "customName": "check inputs",
+                            "description": "Check the hostname input; read the optional reason and posture summary.",
+                            "customNameId": 0
+                        },
+                        "functionId": 1,
+                        "functionName": "check_inputs",
+                        "inputParameters": [
+                            "playbook_input:hostname",
+                            "playbook_input:reason",
+                            "playbook_input:posture_summary"
+                        ],
+                        "outputVariables": [
+                            "hostname",
+                            "reason",
+                            "posture_summary"
+                        ]
+                    },
+                    "type": "code",
+                    "errors": {},
+                    "userCode": "    ################################################################################\n    ################################################################################\n    ################################################################################\n\n    # Read again here so this block does not depend on the generated variable names.\n    values = {}\n    for name in (\"hostname\", \"reason\", \"posture_summary\"):\n        rows = phantom.collect2(container=container, datapath=[\"playbook_input:\" + name])\n        values[name] = str(_first(rows) or \"\").strip()\n\n    if not values[\"hostname\"]:\n        problem = \"No hostname was given. Run the playbook again with the endpoint's hostname as Tehtris shows it.\"\n        phantom.error(problem)\n        phantom.add_note(\n            container=container,\n            note_type=\"general\",\n            title=\"Tehtris Isolation - Error\",\n            content=problem,\n            note_format=\"markdown\",  # the content is markdown; add_note() defaults to html\n        )\n        phantom.save_run_data(key=\"playbook_output\", value=json.dumps({\n            \"status\": \"error\", \"isolation_requested\": False, \"isolation_verified\": False, \"message\": problem}))\n        return\n\n    check_inputs__hostname = values[\"hostname\"]\n    check_inputs__reason = values[\"reason\"]\n    check_inputs__posture_summary = values[\"posture_summary\"]\n\n    # Also saved as run data: later blocks read these keys in their own Custom Code.\n    for name, value in values.items():\n        phantom.save_run_data(key=\"check_inputs:\" + name, value=json.dumps(value))\n\n    ################################################################################\n    ################################################################################\n    ################################################################################\n",
+                    "warnings": {}
+                },
+                "3": {
+                    "x": 190,
+                    "y": 300,
+                    "id": "3",
+                    "data": {
+                        "id": "3",
+                        "tab": "byConnector",
+                        "loop": {
+                            "enabled": false,
+                            "pauseUnit": "m",
+                            "conditions": [
+                                {
+                                    "type": "if",
+                                    "logic": "and",
+                                    "comparisons": [
+                                        {
+                                            "op": "==",
+                                            "param": "",
+                                            "value": "",
+                                            "comparisonKey": "comparison_key_0"
+                                        }
+                                    ],
+                                    "conditionKey": "condition_key_0",
+                                    "conditionIndex": 0
+                                }
+                            ],
+                            "pauseValue": 2,
+                            "exitAfterUnit": "m",
+                            "exitLoopAfter": 2,
+                            "exitAfterValue": 10,
+                            "exitConditionEnabled": false
+                        },
+                        "type": "action",
+                        "action": "get isolation status",
+                        "advanced": {
+                            "join": [],
+                            "customName": "pre check isolation",
+                            "description": "Read the current isolation state (live: needs the agent connected).",
+                            "customNameId": 0
+                        },
+                        "connector": "Tehtris EDR",
+                        "actionType": "investigate",
+                        "functionId": 2,
+                        "parameters": {
+                            "hostname": "check_inputs:custom_function:hostname"
+                        },
+                        "connectorId": "bf34e3e5-c6da-49b0-8dbc-cd4f2e080191",
+                        "functionName": "pre_check_isolation",
+                        "connectorConfigs": [
+                            "tehtris_mock_8446"
+                        ],
+                        "connectorVersion": "v1",
+                        "requiredParameters": [
+                            {
+                                "field": "hostname",
+                                "default": "",
+                                "data_type": "string"
+                            }
+                        ]
+                    },
+                    "type": "action",
+                    "errors": {},
+                    "userCode": "    ################################################################################\n    ################################################################################\n\n    # Write your custom code here...\n\n    ################################################################################\n    ################################################################################\n",
+                    "warnings": {}
+                },
+                "4": {
+                    "x": 190,
+                    "y": 450,
+                    "id": "4",
+                    "data": {
+                        "id": "4",
+                        "type": "code",
+                        "advanced": {
+                            "join": [],
+                            "customName": "route pre check",
+                            "description": "Stop if the state is unreadable or already isolated; else ask the analyst.",
+                            "customNameId": 0
+                        },
+                        "functionId": 3,
+                        "functionName": "route_pre_check",
+                        "inputParameters": [
+                            "pre_check_isolation:action_result.status",
+                            "pre_check_isolation:action_result.message",
+                            "pre_check_isolation:action_result.summary.isolated",
+                            "check_inputs:custom_function:hostname"
+                        ],
+                        "outputVariables": []
+                    },
+                    "type": "code",
+                    "errors": {},
+                    "userCode": "    ################################################################################\n    ################################################################################\n    ################################################################################\n\n    hostname = json.loads(phantom.get_run_data(key=\"check_inputs:hostname\") or '\"\"')\n    reason = json.loads(phantom.get_run_data(key=\"check_inputs:reason\") or '\"\"')\n    posture = json.loads(phantom.get_run_data(key=\"check_inputs:posture_summary\") or '\"\"')\n    rows = phantom.collect2(container=container, datapath=[\n        \"pre_check_isolation:action_result.status\",\n        \"pre_check_isolation:action_result.message\",\n        \"pre_check_isolation:action_result.summary.isolated\",\n    ])\n    status, message, isolated = _first(rows, 0), _first(rows, 1), _first(rows, 2)\n\n    stop = None\n    if status != \"success\":\n        stop = (\"not_sent\", \"Nothing was sent to Tehtris: the isolation state of {} could not be read, so the \"\n                            \"playbook did not ask for approval. **Tehtris said:** {}\".format(_code(hostname), _code(message)))\n    elif isolated is True:\n        stop = (\"already_isolated\", \"{} is already isolated in Tehtris EDR; nothing was sent.\".format(_code(hostname)))\n    elif isolated is not False:\n        stop = (\"not_sent\", \"Nothing was sent to Tehtris: its reply did not say whether {} is isolated.\"\n                            .format(_code(hostname)))\n    if stop:\n        outcome, text = stop\n        phantom.add_note(\n            container=container,\n            note_type=\"general\",\n            title=\"Tehtris Isolation: {}\".format(hostname),\n            content=\"# Tehtris isolation: {}\\n\\n{}\".format(_code(hostname), text),\n            note_format=\"markdown\",  # the content is markdown; add_note() defaults to html\n        )\n        phantom.save_run_data(key=\"playbook_output\", value=json.dumps({\n            \"status\": outcome, \"isolation_requested\": False, \"isolation_verified\": isolated is True,\n            \"tag_applied\": \"not attempted\", \"message\": re.sub(r\"[`*]\", \"\", text)}))\n        return\n\n    # The prompt is raised from code, not from a native prompt block: a VPE save\n    # regenerates prompt blocks whole (they have no Custom Code), which would drop\n    # this approver fallback. The callback continues the flow; the return below\n    # stops the generated call to isolate_decision from also running right away.\n    user = container.get(\"owner_name\", None) or \"soar_local_admin\"\n    lines = [\n        \"**Isolate {} from the network through Tehtris EDR?**\".format(_code(hostname)),\n        \"\",\n        \"Container: {}\".format(_code(container.get(\"name\"))),\n        \"Reason given: {}\".format(_code(reason) if reason else \"none\"),\n        \"\",\n        \"Isolation blocks every connection of the endpoint except to the Tehtris appliances and DNS, \"\n        \"under the tenant's isolation policy. Release it with tehtris_host_unisolate.\",\n    ]\n    if posture:\n        lines += [\"\", \"Posture summary:\", \"\", \"```\", posture.replace(\"```\", \"'''\")[:2000], \"```\"]\n    response_types = [\n        {\n            \"prompt\": \"Decision\",\n            \"options\": {\n                \"type\": \"list\",\n                \"required\": True,\n                \"choices\": [\n                    _ISOLATE,\n                    _DO_NOT_ISOLATE,\n                ],\n            },\n        },\n    ]\n    phantom.save_run_data(key=\"route_pre_check:approver\", value=json.dumps(user))\n    phantom.prompt2(container=container, user=user, role=None, message=\"\\n\".join(lines), respond_in_mins=_PROMPT_MINUTES, name=\"isolate_approval\", parameters=[], response_types=response_types, callback=isolate_decision)\n\n    return\n\n    ################################################################################\n    ################################################################################\n    ################################################################################\n",
+                    "warnings": {}
+                },
+                "5": {
+                    "x": 190,
+                    "y": 600,
+                    "id": "5",
+                    "data": {
+                        "id": "5",
+                        "type": "code",
+                        "advanced": {
+                            "join": [],
+                            "customName": "isolate decision",
+                            "description": "Read the analyst's answer; anything but Isolate host stops with a note.",
+                            "customNameId": 0
+                        },
+                        "functionId": 4,
+                        "functionName": "isolate_decision",
+                        "inputParameters": [],
+                        "outputVariables": [
+                            "analyst_response"
+                        ]
+                    },
+                    "type": "code",
+                    "errors": {},
+                    "userCode": "    ################################################################################\n    ################################################################################\n    ################################################################################\n\n    hostname = json.loads(phantom.get_run_data(key=\"check_inputs:hostname\") or '\"\"')\n    approver = json.loads(phantom.get_run_data(key=\"route_pre_check:approver\") or '\"\"')\n    run_id = phantom.get_playbook_run_id_()\n\n    answer, prompt_status = None, \"expired\"\n    try:\n        approval_url = phantom.build_phantom_rest_url(\"approval\") + \\\n            \"?_filter_playbook_run={}&_filter_name=\\\"isolate_approval\\\"&sort=id&order=desc&page_size=1\".format(run_id)\n        approvals = phantom.requests.get(uri=approval_url, verify=False).json().get(\"data\") or []\n    except Exception as e:\n        phantom.error(\"Could not fetch the approval record for playbook_run {}: {}\".format(run_id, str(e)))\n        approvals = []\n    if approvals:\n        approval = approvals[0]\n        responses = approval.get(\"responses\") or []\n        if approval.get(\"status\") == \"approved\" and responses and responses[0]:\n            answer, prompt_status = responses[0], \"answered\"\n        else:\n            prompt_status = approval.get(\"status\") or \"expired\"\n    else:\n        phantom.error(\"No approval record found for playbook_run {}\".format(run_id))\n\n    isolate_decision__analyst_response = answer or prompt_status\n    phantom.save_run_data(key=\"isolate_decision:analyst_response\", value=json.dumps(isolate_decision__analyst_response))\n\n    if answer != _ISOLATE:\n        if answer == _DO_NOT_ISOLATE:\n            outcome, text = \"declined\", \"{} declined the isolation of {}; nothing was sent to Tehtris.\".format(\n                _code(approver), _code(hostname))\n        else:\n            outcome, text = \"expired\", (\"The isolation prompt for {} got no answer from {} within {} minutes \"\n                                        \"(status {}); nothing was sent to Tehtris.\").format(\n                _code(hostname), _code(approver), _PROMPT_MINUTES, _code(prompt_status))\n        phantom.add_note(\n            container=container,\n            note_type=\"general\",\n            title=\"Tehtris Isolation: {}\".format(hostname),\n            content=\"# Tehtris isolation: {}\\n\\n{}\".format(_code(hostname), text),\n            note_format=\"markdown\",  # the content is markdown; add_note() defaults to html\n        )\n        phantom.save_run_data(key=\"playbook_output\", value=json.dumps({\n            \"status\": outcome, \"isolation_requested\": False, \"isolation_verified\": False,\n            \"tag_applied\": \"not attempted\", \"analyst_response\": isolate_decision__analyst_response,\n            \"message\": text.replace(\"`\", \"\")}))\n        return\n\n    ################################################################################\n    ################################################################################\n    ################################################################################\n",
+                    "warnings": {}
+                },
+                "6": {
+                    "x": 190,
+                    "y": 750,
+                    "id": "6",
+                    "data": {
+                        "id": "6",
+                        "tab": "byConnector",
+                        "loop": {
+                            "enabled": false,
+                            "pauseUnit": "m",
+                            "conditions": [
+                                {
+                                    "type": "if",
+                                    "logic": "and",
+                                    "comparisons": [
+                                        {
+                                            "op": "==",
+                                            "param": "",
+                                            "value": "",
+                                            "comparisonKey": "comparison_key_0"
+                                        }
+                                    ],
+                                    "conditionKey": "condition_key_0",
+                                    "conditionIndex": 0
+                                }
+                            ],
+                            "pauseValue": 2,
+                            "exitAfterUnit": "m",
+                            "exitLoopAfter": 2,
+                            "exitAfterValue": 10,
+                            "exitConditionEnabled": false
+                        },
+                        "type": "action",
+                        "action": "send for isolation",
+                        "advanced": {
+                            "join": [],
+                            "customName": "send for isolation",
+                            "description": "Ask Tehtris to isolate the endpoint (refused for a shared hostname).",
+                            "customNameId": 0
+                        },
+                        "connector": "Tehtris EDR",
+                        "actionType": "contain",
+                        "functionId": 5,
+                        "parameters": {
+                            "hostname": "check_inputs:custom_function:hostname"
+                        },
+                        "connectorId": "bf34e3e5-c6da-49b0-8dbc-cd4f2e080191",
+                        "functionName": "send_for_isolation",
+                        "connectorConfigs": [
+                            "tehtris_mock_8446"
+                        ],
+                        "connectorVersion": "v1",
+                        "requiredParameters": [
+                            {
+                                "field": "hostname",
+                                "default": "",
+                                "data_type": "string"
+                            }
+                        ]
+                    },
+                    "type": "action",
+                    "errors": {},
+                    "userCode": "    ################################################################################\n    ################################################################################\n\n    # Write your custom code here...\n\n    ################################################################################\n    ################################################################################\n",
+                    "warnings": {}
+                },
+                "7": {
+                    "x": 190,
+                    "y": 900,
+                    "id": "7",
+                    "data": {
+                        "id": "7",
+                        "tab": "byConnector",
+                        "loop": {
+                            "enabled": false,
+                            "pauseUnit": "m",
+                            "conditions": [
+                                {
+                                    "type": "if",
+                                    "logic": "and",
+                                    "comparisons": [
+                                        {
+                                            "op": "==",
+                                            "param": "",
+                                            "value": "",
+                                            "comparisonKey": "comparison_key_0"
+                                        }
+                                    ],
+                                    "conditionKey": "condition_key_0",
+                                    "conditionIndex": 0
+                                }
+                            ],
+                            "pauseValue": 2,
+                            "exitAfterUnit": "m",
+                            "exitLoopAfter": 2,
+                            "exitAfterValue": 10,
+                            "exitConditionEnabled": false
+                        },
+                        "type": "action",
+                        "action": "get isolation status",
+                        "advanced": {
+                            "join": [],
+                            "customName": "verify isolation",
+                            "description": "Read the isolation state again to confirm it took effect.",
+                            "customNameId": 0
+                        },
+                        "connector": "Tehtris EDR",
+                        "actionType": "investigate",
+                        "functionId": 6,
+                        "parameters": {
+                            "hostname": "check_inputs:custom_function:hostname"
+                        },
+                        "connectorId": "bf34e3e5-c6da-49b0-8dbc-cd4f2e080191",
+                        "functionName": "verify_isolation",
+                        "connectorConfigs": [
+                            "tehtris_mock_8446"
+                        ],
+                        "connectorVersion": "v1",
+                        "requiredParameters": [
+                            {
+                                "field": "hostname",
+                                "default": "",
+                                "data_type": "string"
+                            }
+                        ]
+                    },
+                    "type": "action",
+                    "errors": {},
+                    "userCode": "    ################################################################################\n    ################################################################################\n\n    # Write your custom code here...\n\n    ################################################################################\n    ################################################################################\n",
+                    "warnings": {}
+                },
+                "8": {
+                    "x": 190,
+                    "y": 1050,
+                    "id": "8",
+                    "data": {
+                        "id": "8",
+                        "tab": "byConnector",
+                        "loop": {
+                            "enabled": false,
+                            "pauseUnit": "m",
+                            "conditions": [
+                                {
+                                    "type": "if",
+                                    "logic": "and",
+                                    "comparisons": [
+                                        {
+                                            "op": "==",
+                                            "param": "",
+                                            "value": "",
+                                            "comparisonKey": "comparison_key_0"
+                                        }
+                                    ],
+                                    "conditionKey": "condition_key_0",
+                                    "conditionIndex": 0
+                                }
+                            ],
+                            "pauseValue": 2,
+                            "exitAfterUnit": "m",
+                            "exitLoopAfter": 2,
+                            "exitAfterValue": 10,
+                            "exitConditionEnabled": false
+                        },
+                        "type": "action",
+                        "action": "get host detail",
+                        "advanced": {
+                            "join": [],
+                            "customName": "read host tags",
+                            "description": "Read the endpoint's current tag string, to append the marker to it.",
+                            "customNameId": 0
+                        },
+                        "connector": "Tehtris EDR",
+                        "actionType": "investigate",
+                        "functionId": 7,
+                        "parameters": {
+                            "hostname": "check_inputs:custom_function:hostname"
+                        },
+                        "connectorId": "bf34e3e5-c6da-49b0-8dbc-cd4f2e080191",
+                        "functionName": "read_host_tags",
+                        "connectorConfigs": [
+                            "tehtris_mock_8446"
+                        ],
+                        "connectorVersion": "v1",
+                        "requiredParameters": [
+                            {
+                                "field": "hostname",
+                                "default": "",
+                                "data_type": "string"
+                            }
+                        ]
+                    },
+                    "type": "action",
+                    "errors": {},
+                    "userCode": "    ################################################################################\n    ################################################################################\n\n    # Write your custom code here...\n\n    ################################################################################\n    ################################################################################\n",
+                    "warnings": {}
+                },
+                "9": {
+                    "x": 190,
+                    "y": 1200,
+                    "id": "9",
+                    "data": {
+                        "id": "9",
+                        "type": "code",
+                        "advanced": {
+                            "join": [],
+                            "customName": "build tag",
+                            "description": "New tag string: current tags plus soar-isolated, minus soar-released.",
+                            "customNameId": 0
+                        },
+                        "functionId": 8,
+                        "functionName": "build_tag",
+                        "inputParameters": [
+                            "verify_isolation:action_result.summary.isolated",
+                            "read_host_tags:action_result.status",
+                            "read_host_tags:action_result.data.*.tags"
+                        ],
+                        "outputVariables": [
+                            "tag",
+                            "tag_action"
+                        ]
+                    },
+                    "type": "code",
+                    "errors": {},
+                    "userCode": "    ################################################################################\n    ################################################################################\n    ################################################################################\n\n    verified = _first(phantom.collect2(container=container, datapath=[\"verify_isolation:action_result.summary.isolated\"]))\n    tag_rows = phantom.collect2(container=container, datapath=[\"read_host_tags:action_result.status\", \"read_host_tags:action_result.data.*.tags\"])\n    read_status, current = _first(tag_rows, 0), _first(tag_rows, 1)\n\n    if verified is not True:\n        tag_action, new_tags, why = \"skip\", None, \"the isolation is not confirmed yet, so the tags were left unchanged\"\n    elif read_status != \"success\":\n        tag_action, new_tags, why = \"skip\", None, \"the endpoint's current tags could not be read\"\n    else:\n        list_ok, _message, list_rows = phantom.get_list(list_name=_SETTINGS_LIST)\n        settings = _settings(list_rows if list_ok else [])\n        tag_action, new_tags, why = _build_tag(current, _MARKER, _OTHER_MARKER,\n                                               settings.get(\"tag_trigram\"), settings.get(\"tag_separator\"))\n\n    build_tag__tag = new_tags\n    build_tag__tag_action = tag_action\n    phantom.save_run_data(key=\"build_tag:tag\", value=json.dumps(new_tags))\n    phantom.save_run_data(key=\"build_tag:tag_action\", value=json.dumps(tag_action))\n    phantom.save_run_data(key=\"build_tag:reason\", value=json.dumps(why))\n    phantom.save_run_data(key=\"build_tag:tags_before\", value=json.dumps(current))\n\n    ################################################################################\n    ################################################################################\n    ################################################################################\n",
+                    "warnings": {}
+                },
+                "10": {
+                    "x": 190,
+                    "y": 1350,
+                    "id": "10",
+                    "data": {
+                        "id": "10",
+                        "tab": "byConnector",
+                        "loop": {
+                            "enabled": false,
+                            "pauseUnit": "m",
+                            "conditions": [
+                                {
+                                    "type": "if",
+                                    "logic": "and",
+                                    "comparisons": [
+                                        {
+                                            "op": "==",
+                                            "param": "",
+                                            "value": "",
+                                            "comparisonKey": "comparison_key_0"
+                                        }
+                                    ],
+                                    "conditionKey": "condition_key_0",
+                                    "conditionIndex": 0
+                                }
+                            ],
+                            "pauseValue": 2,
+                            "exitAfterUnit": "m",
+                            "exitLoopAfter": 2,
+                            "exitAfterValue": 10,
+                            "exitConditionEnabled": false
+                        },
+                        "type": "action",
+                        "action": "update tag",
+                        "advanced": {
+                            "join": [],
+                            "customName": "tag isolated",
+                            "description": "Write the new tag string back, unless build_tag found nothing to write.",
+                            "customNameId": 0
+                        },
+                        "connector": "Tehtris EDR",
+                        "actionType": "contain",
+                        "functionId": 9,
+                        "parameters": {
+                            "tag": "build_tag:custom_function:tag",
+                            "hostname": "check_inputs:custom_function:hostname"
+                        },
+                        "connectorId": "bf34e3e5-c6da-49b0-8dbc-cd4f2e080191",
+                        "functionName": "tag_isolated",
+                        "connectorConfigs": [
+                            "tehtris_mock_8446"
+                        ],
+                        "connectorVersion": "v1",
+                        "requiredParameters": [
+                            {
+                                "field": "hostname",
+                                "default": "",
+                                "data_type": "string"
+                            },
+                            {
+                                "field": "tag",
+                                "default": "",
+                                "data_type": "string"
+                            }
+                        ]
+                    },
+                    "type": "action",
+                    "errors": {},
+                    "userCode": "    ################################################################################\n    ################################################################################\n\n    # Only a \"write\" decision reaches Tehtris; otherwise go straight to the note,\n    # and the return below skips the generated update tag call.\n    if json.loads(phantom.get_run_data(key=\"build_tag:tag_action\") or '\"skip\"') != \"write\":\n        note_result(container=container)\n        return\n\n    ################################################################################\n    ################################################################################\n",
+                    "warnings": {}
+                },
+                "11": {
+                    "x": 190,
+                    "y": 1500,
+                    "id": "11",
+                    "data": {
+                        "id": "11",
+                        "type": "code",
+                        "advanced": {
+                            "join": [],
+                            "customName": "note result",
+                            "description": "Write the Tehtris Isolation note: request, verification and tag outcome.",
+                            "customNameId": 0
+                        },
+                        "functionId": 10,
+                        "functionName": "note_result",
+                        "inputParameters": [
+                            "send_for_isolation:action_result.status",
+                            "send_for_isolation:action_result.message",
+                            "isolate_decision:custom_function:analyst_response"
+                        ],
+                        "outputVariables": []
+                    },
+                    "type": "code",
+                    "errors": {},
+                    "userCode": "    ################################################################################\n    ################################################################################\n    ################################################################################\n\n    def run_value(key, default):\n        raw = phantom.get_run_data(key=key)\n        return json.loads(raw) if raw else default\n\n    hostname = run_value(\"check_inputs:hostname\", \"\")\n    reason = run_value(\"check_inputs:reason\", \"\")\n    approver = run_value(\"route_pre_check:approver\", \"\")\n    answer = run_value(\"isolate_decision:analyst_response\", None)\n\n    send = phantom.collect2(container=container, datapath=[\"send_for_isolation:action_result.status\",\n                                                           \"send_for_isolation:action_result.message\",\n                                                           \"send_for_isolation:action_result.summary.applied\"])\n    send_status, send_message, applied = _first(send, 0), _first(send, 1), _first(send, 2)\n    verify = phantom.collect2(container=container, datapath=[\"verify_isolation:action_result.status\",\n                                                             \"verify_isolation:action_result.message\",\n                                                             \"verify_isolation:action_result.summary.isolated\"])\n    verify_status, verify_message, verified = _first(verify, 0), _first(verify, 1), _first(verify, 2)\n\n    tag_action = run_value(\"build_tag:tag_action\", \"skip\")\n    tag_reason = run_value(\"build_tag:reason\", \"\")\n    tags_before = run_value(\"build_tag:tags_before\", None)\n    new_tags = run_value(\"build_tag:tag\", None)\n    if tag_action == \"write\":\n        tag = phantom.collect2(container=container, datapath=[\"tag_isolated:action_result.status\",\n                                                              \"tag_isolated:action_result.message\"])\n        if _first(tag, 0) == \"success\":\n            tag_applied, tag_text = \"written\", \"{} \u2192 {}\".format(_code(tags_before), _code(new_tags))\n        else:\n            tag_applied = \"failed\"\n            tag_text = \"writing {} failed: {}\".format(_code(new_tags), _code(_first(tag, 1) or \"no result\"))\n    elif tag_action == \"already\":\n        tag_applied, tag_text = \"already\", tag_reason\n    elif send_status != \"success\":\n        tag_applied, tag_text = \"skipped\", \"not written: the isolation request failed\"\n    else:\n        tag_applied, tag_text = \"skipped\", \"not written: \" + tag_reason\n\n    if send_status != \"success\":\n        status = \"failed\"\n        headline = \"Tehtris refused or failed the isolation of {}.\".format(_code(hostname))\n    elif applied is False:\n        status = \"queued\"\n        headline = \"Tehtris queued the isolation of {}; it is not applied yet.\".format(_code(hostname))\n    elif verified is True:\n        status = \"isolated\"\n        headline = \"{} is isolated in Tehtris EDR (verified).\".format(_code(hostname))\n    else:\n        status = \"applied_not_confirmed\"\n        headline = (\"Tehtris accepted the isolation of {}, but the read-back does not confirm it yet \u2014 \"\n                    \"check again in a minute.\".format(_code(hostname)))\n\n    lines = [\n        \"# Tehtris isolation: {}\".format(_code(hostname)),\n        \"\",\n        headline,\n        \"\",\n        \"- **Approved by:** {} ({})\".format(_code(approver), _code(answer)),\n        \"- **Reason:** {}\".format(_code(reason) if reason else \"none given\"),\n        # A refusal for a shared hostname lists every endpoint's uuid: keep it whole.\n        \"- **Isolation request:** {} \u2014 {}\".format(_code(send_status or \"not run\"), _code(send_message, 2000)),\n        \"- **Read-back:** {}\".format(\n            \"isolated\" if verified is True else \"not isolated\" if verified is False else\n            \"unknown \u2014 {}\".format(_code(verify_message or verify_status or \"not run\"))),\n        \"- **Tehtris tags:** {}\".format(tag_text),\n    ]\n    content = \"\\n\".join(lines)\n    phantom.add_note(\n        container=container,\n        note_type=\"general\",\n        title=\"Tehtris Isolation: {}\".format(hostname),\n        content=content,\n        note_format=\"markdown\",  # the content is markdown; add_note() defaults to html\n    )\n    phantom.save_run_data(key=\"playbook_output\", value=json.dumps({\n        \"status\": status,\n        \"isolation_requested\": True,\n        \"isolation_verified\": verified is True,\n        \"tag_applied\": tag_applied,\n        \"analyst_response\": answer,\n        \"message\": re.sub(r\"[`*]\", \"\", headline),\n    }))\n\n    ################################################################################\n    ################################################################################\n    ################################################################################\n",
+                    "warnings": {}
+                }
+            },
+            "notes": "",
+            "description": "Data playbook (UC16 PB2) run by an analyst on any container. Isolates a host from the network through Tehtris EDR after an analyst approves it in a prompt: pre-checks the isolation state, isolates, verifies, marks the host's Tehtris tags, and records the outcome in a Tehtris Isolation note.",
+            "globalCustomCode": "################################################################################\n################################################################################\n\n# Design notes (kept here because a VPE save replaces the module docstring):\n# UC16 PB2 -- see docs/usecases/uc16_tehtris_edr_implementation_plan.md.\n# Always an analyst prompt before isolating (decision 2), raised from a code\n# block so the approver can fall back from the container owner to\n# soar_local_admin (UC2 PB4/PB5 precedent). Nothing is sent when the pre-check\n# cannot read the isolation state -- agent offline (504), unknown host, or no\n# state in the reply (decision 8): no persist, so nothing runs unseen later.\n# The Tehtris tags are ONE string, at most 64 characters, \"<trigram>_...\", that\n# update tag replaces whole, so the marker is added by read, append, write back\n# (decision 7); one marker slot, soar-isolated / soar-released (P2).\n\nimport re\n\n_MARKER = \"soar-isolated\"\n_OTHER_MARKER = \"soar-released\"\n_SETTINGS_LIST = \"tehtris_edr_settings\"\n_DEFAULT_TAG_SEPARATOR = \",\"\n_TAGS_MAX_CHARS = 64\n_PROMPT_MINUTES = 30\n_ISOLATE = \"Isolate host\"\n_DO_NOT_ISOLATE = \"Do not isolate\"\n_CELL_MAX_CHARS = 300\n\n\ndef _code(value, limit=_CELL_MAX_CHARS):\n    \"\"\"A value from Tehtris or an input as an inline code span: one line, no\n    backticks, cut at limit, so markup and links in it stay inert.\"\"\"\n    if value is None or value == \"\":\n        return \"\u2014\"\n    text = \" \".join(str(value).split()).replace(\"`\", \"'\")\n    if len(text) > limit:\n        text = text[:limit - 1] + \"\u2026\"\n    return \"`{}`\".format(text)\n\n\ndef _settings(rows):\n    \"\"\"{key: value} from the tehtris_edr_settings custom list rows.\"\"\"\n    settings = {}\n    for row in rows or []:\n        if row and row[0] not in (None, \"\") and len(row) > 1:\n            settings[str(row[0]).strip()] = str(row[1] if row[1] is not None else \"\").strip()\n    return settings\n\n\ndef _build_tag(current, add, remove, trigram, separator):\n    \"\"\"(action, new_tags, reason) to put `add` in the endpoint's tag string and\n    take `remove` out. action is \"write\", \"already\" or \"skip\"; a skip never\n    writes, so the endpoint's existing tags are never cut or reshaped.\"\"\"\n    current = (current or \"\").strip()\n    separator = separator or _DEFAULT_TAG_SEPARATOR\n    if current:\n        match = re.match(r\"^([A-Za-z0-9]{3}_)(.*)$\", current, re.S)\n        if not match:\n            return \"skip\", None, \"the endpoint's tags {} do not start with a trigram and '_'\".format(_code(current))\n        prefix, body = match.groups()\n        items = [item for item in body.split(separator) if item != \"\"]\n    else:\n        trigram = (trigram or \"\").strip()\n        if not re.match(r\"^[A-Za-z0-9]{3}$\", trigram):\n            return \"skip\", None, (\"the endpoint has no tags yet and custom list {} has no valid tag_trigram\"\n                                  .format(_SETTINGS_LIST))\n        prefix, items = trigram + \"_\", []\n    if add in items and remove not in items:\n        return \"already\", current, \"the endpoint's tags already carry {}\".format(_code(add))\n    items = [item for item in items if item != remove]\n    if add not in items:\n        items.append(add)\n    new = prefix + separator.join(items)\n    if len(new) > _TAGS_MAX_CHARS:\n        return \"skip\", None, (\"adding {} would make the tags {} characters long; Tehtris allows {}\"\n                              .format(_code(add), len(new), _TAGS_MAX_CHARS))\n    if \"%\" in new or \"*\" in new:\n        return \"skip\", None, \"the tags would contain '%' or '*', which Tehtris refuses\"\n    return \"write\", new, \"\"\n\n\ndef _first(rows, index=0):\n    \"\"\"Value `index` of the first collect2 row, or None.\"\"\"\n    if rows and len(rows[0]) > index:\n        return rows[0][index]\n    return None\n################################################################################\n################################################################################\n"
+        },
+        "input_spec": [
+            {
+                "name": "hostname",
+                "contains": [
+                    "host name"
+                ],
+                "description": "Required. The endpoint's hostname as Tehtris EDR shows it (exact match, case-insensitive)."
+            },
+            {
+                "name": "reason",
+                "contains": [],
+                "description": "Optional. Why the host should be isolated; shown in the prompt and the note."
+            },
+            {
+                "name": "posture_summary",
+                "contains": [],
+                "description": "Optional. A posture summary (e.g. tehtris_host_posture's summary output), shown in the prompt."
+            }
+        ],
+        "output_spec": [
+            {
+                "name": "status",
+                "contains": [],
+                "metadata": {},
+                "datapaths": [],
+                "deduplicate": false,
+                "description": "isolated, applied_not_confirmed, queued, already_isolated, not_sent (state unreadable), declined, expired, failed, or error."
+            },
+            {
+                "name": "isolation_requested",
+                "contains": [],
+                "metadata": {},
+                "datapaths": [],
+                "deduplicate": false,
+                "description": "True when the isolation request was sent to Tehtris."
+            },
+            {
+                "name": "isolation_verified",
+                "contains": [],
+                "metadata": {},
+                "datapaths": [],
+                "deduplicate": false,
+                "description": "True when the read-back shows the endpoint isolated."
+            },
+            {
+                "name": "tag_applied",
+                "contains": [],
+                "metadata": {},
+                "datapaths": [],
+                "deduplicate": false,
+                "description": "written, already, skipped, failed, or not attempted."
+            },
+            {
+                "name": "analyst_response",
+                "contains": [],
+                "metadata": {},
+                "datapaths": [],
+                "deduplicate": false,
+                "description": "The analyst's answer: Isolate host, Do not isolate, or the prompt status."
+            },
+            {
+                "name": "message",
+                "contains": [],
+                "metadata": {},
+                "datapaths": [],
+                "deduplicate": false,
+                "description": "One-line outcome."
+            }
+        ],
+        "playbook_type": "data",
+        "python_version": "3.13",
+        "schema": "5.0.24",
+        "version": "8.6.0.530",
+        "playbook_trigger": "artifact_created"
+    },
+    "create_time": "2026-10-05T18:59:59.577768Z",
+    "draft_mode": false,
+    "labels": [
+        "*"
+    ],
+    "tags": [
+        "tehtris_edr",
+        "uc16",
+        "isolation"
+    ]
+}

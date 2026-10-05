@@ -1,0 +1,13 @@
+{
+  "name": "tehtris_edr_settings",
+  "content": [
+    [
+      "tag_trigram",
+      ""
+    ],
+    [
+      "tag_separator",
+      ""
+    ]
+  ]
+}

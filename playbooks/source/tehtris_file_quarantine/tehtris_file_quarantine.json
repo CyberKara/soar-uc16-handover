@@ -1,0 +1,532 @@
+{
+    "blockly": false,
+    "blockly_xml": "<xml></xml>",
+    "category": "Endpoint",
+    "coa": {
+        "data": {
+            "hash": "",
+            "edges": [
+                {
+                    "id": "port_0_to_port_2",
+                    "sourceNode": "0",
+                    "sourcePort": "0_out",
+                    "targetNode": "2",
+                    "targetPort": "2_in"
+                },
+                {
+                    "id": "port_2_to_port_3",
+                    "sourceNode": "2",
+                    "sourcePort": "2_out",
+                    "targetNode": "3",
+                    "targetPort": "3_in"
+                },
+                {
+                    "id": "port_3_to_port_4",
+                    "sourceNode": "3",
+                    "sourcePort": "3_out",
+                    "targetNode": "4",
+                    "targetPort": "4_in"
+                },
+                {
+                    "id": "port_4_to_port_5",
+                    "sourceNode": "4",
+                    "sourcePort": "4_out",
+                    "targetNode": "5",
+                    "targetPort": "5_in"
+                },
+                {
+                    "id": "port_5_to_port_6",
+                    "sourceNode": "5",
+                    "sourcePort": "5_out",
+                    "targetNode": "6",
+                    "targetPort": "6_in"
+                },
+                {
+                    "id": "port_6_to_port_7",
+                    "sourceNode": "6",
+                    "sourcePort": "6_out",
+                    "targetNode": "7",
+                    "targetPort": "7_in"
+                },
+                {
+                    "id": "port_7_to_port_8",
+                    "sourceNode": "7",
+                    "sourcePort": "7_out",
+                    "targetNode": "8",
+                    "targetPort": "8_in"
+                },
+                {
+                    "id": "port_8_to_port_1",
+                    "sourceNode": "8",
+                    "sourcePort": "8_out",
+                    "targetNode": "1",
+                    "targetPort": "1_in"
+                }
+            ],
+            "nodes": {
+                "0": {
+                    "x": 190,
+                    "y": -6.394884621840902e-14,
+                    "id": "0",
+                    "data": {
+                        "id": "0",
+                        "type": "start",
+                        "advanced": {
+                            "join": []
+                        },
+                        "functionName": "on_start"
+                    },
+                    "type": "start",
+                    "errors": {},
+                    "warnings": {}
+                },
+                "1": {
+                    "x": 190,
+                    "y": 1200,
+                    "id": "1",
+                    "data": {
+                        "id": "1",
+                        "type": "end",
+                        "advanced": {
+                            "join": []
+                        },
+                        "functionId": 8,
+                        "functionName": "on_finish"
+                    },
+                    "type": "end",
+                    "errors": {},
+                    "userCode": "    ################################################################################\n    ################################################################################\n    ################################################################################\n\n    # Populate the generated `output` dict; the save after Custom Code End emits it.\n    # No block recorded an outcome (the run stopped early): report error.\n    raw_output = phantom.get_run_data(key=\"playbook_output\")\n    if raw_output:\n        output.update(json.loads(raw_output))\n    # The 8.6 VPE initialises every output above to [] (8.5 wrote None), so an\n    # output no block set is normalised to null here, whichever form a save wrote.\n    # quarantine_paths is a real list when set, so only the other fields are touched.\n    for key, value in output.items():\n        if value == [] and key != \"quarantine_paths\":\n            output[key] = None\n    if output[\"status\"] is None:\n        output[\"status\"] = \"error\"\n\n    ################################################################################\n    ################################################################################\n    ################################################################################\n",
+                    "warnings": {}
+                },
+                "2": {
+                    "x": 190,
+                    "y": 150,
+                    "id": "2",
+                    "data": {
+                        "id": "2",
+                        "type": "code",
+                        "advanced": {
+                            "join": [],
+                            "customName": "check inputs",
+                            "description": "Check the hostname and path inputs; read the optional reason and notification.",
+                            "customNameId": 0
+                        },
+                        "functionId": 1,
+                        "functionName": "check_inputs",
+                        "inputParameters": [
+                            "playbook_input:hostname",
+                            "playbook_input:path",
+                            "playbook_input:reason",
+                            "playbook_input:notification"
+                        ],
+                        "outputVariables": [
+                            "hostname",
+                            "path",
+                            "reason",
+                            "notification"
+                        ]
+                    },
+                    "type": "code",
+                    "errors": {},
+                    "userCode": "    ################################################################################\n    ################################################################################\n    ################################################################################\n\n    # Read again here so this block does not depend on the generated variable names.\n    values = {}\n    for name in (\"hostname\", \"path\", \"reason\", \"notification\"):\n        rows = phantom.collect2(container=container, datapath=[\"playbook_input:\" + name])\n        values[name] = str(_first(rows) or \"\").strip()\n\n    missing = [name for name in (\"hostname\", \"path\") if not values[name]]\n    if missing:\n        problem = (\"No {} was given. Run the playbook again with the endpoint's hostname as Tehtris shows it \"\n                   \"and the file's full path on that endpoint.\".format(\" and no \".join(missing)))\n        phantom.error(problem)\n        phantom.add_note(\n            container=container,\n            note_type=\"general\",\n            title=\"Tehtris Quarantine - Error\",\n            content=problem,\n            note_format=\"markdown\",  # the content is markdown; add_note() defaults to html\n        )\n        phantom.save_run_data(key=\"playbook_output\", value=json.dumps({\n            \"status\": \"error\", \"file_found\": False, \"quarantined\": False, \"message\": problem}))\n        return\n\n    check_inputs__hostname = values[\"hostname\"]\n    check_inputs__path = values[\"path\"]\n    check_inputs__reason = values[\"reason\"]\n    # Blank = no message to the Windows user; the connector then omits the field.\n    check_inputs__notification = values[\"notification\"] or None\n\n    # Also saved as run data: later blocks read these keys in their own Custom Code.\n    values[\"notification\"] = check_inputs__notification\n    for name, value in values.items():\n        phantom.save_run_data(key=\"check_inputs:\" + name, value=json.dumps(value))\n\n    ################################################################################\n    ################################################################################\n    ################################################################################\n",
+                    "warnings": {}
+                },
+                "3": {
+                    "x": 190,
+                    "y": 300,
+                    "id": "3",
+                    "data": {
+                        "id": "3",
+                        "tab": "byConnector",
+                        "loop": {
+                            "enabled": false,
+                            "pauseUnit": "m",
+                            "conditions": [
+                                {
+                                    "type": "if",
+                                    "logic": "and",
+                                    "comparisons": [
+                                        {
+                                            "op": "==",
+                                            "param": "",
+                                            "value": "",
+                                            "comparisonKey": "comparison_key_0"
+                                        }
+                                    ],
+                                    "conditionKey": "condition_key_0",
+                                    "conditionIndex": 0
+                                }
+                            ],
+                            "pauseValue": 2,
+                            "exitAfterUnit": "m",
+                            "exitLoopAfter": 2,
+                            "exitAfterValue": 10,
+                            "exitConditionEnabled": false
+                        },
+                        "type": "action",
+                        "action": "get file info",
+                        "advanced": {
+                            "join": [],
+                            "customName": "get file info",
+                            "description": "Read the file's hashes, version and signatures (live: needs the agent connected).",
+                            "customNameId": 0
+                        },
+                        "connector": "Tehtris EDR",
+                        "actionType": "investigate",
+                        "functionId": 2,
+                        "parameters": {
+                            "path": "check_inputs:custom_function:path",
+                            "hostname": "check_inputs:custom_function:hostname"
+                        },
+                        "connectorId": "bf34e3e5-c6da-49b0-8dbc-cd4f2e080191",
+                        "functionName": "get_file_info",
+                        "connectorConfigs": [
+                            "tehtris_mock_8446"
+                        ],
+                        "connectorVersion": "v1",
+                        "requiredParameters": [
+                            {
+                                "field": "hostname",
+                                "default": "",
+                                "data_type": "string"
+                            },
+                            {
+                                "field": "path",
+                                "default": "",
+                                "data_type": "string"
+                            }
+                        ]
+                    },
+                    "type": "action",
+                    "errors": {},
+                    "userCode": "    ################################################################################\n    ################################################################################\n\n    # Write your custom code here...\n\n    ################################################################################\n    ################################################################################\n",
+                    "warnings": {}
+                },
+                "4": {
+                    "x": 190,
+                    "y": 450,
+                    "id": "4",
+                    "data": {
+                        "id": "4",
+                        "type": "code",
+                        "advanced": {
+                            "join": [],
+                            "customName": "route file info",
+                            "description": "Stop if the file is unreadable or absent; else ask the analyst.",
+                            "customNameId": 0
+                        },
+                        "functionId": 3,
+                        "functionName": "route_file_info",
+                        "inputParameters": [
+                            "get_file_info:action_result.status",
+                            "get_file_info:action_result.message",
+                            "get_file_info:action_result.summary.file_found",
+                            "get_file_info:action_result.data",
+                            "check_inputs:custom_function:hostname"
+                        ],
+                        "outputVariables": []
+                    },
+                    "type": "code",
+                    "errors": {},
+                    "userCode": "    ################################################################################\n    ################################################################################\n    ################################################################################\n\n    hostname = _run_value(\"check_inputs:hostname\", \"\")\n    path = _run_value(\"check_inputs:path\", \"\")\n    reason = _run_value(\"check_inputs:reason\", \"\")\n    notification = _run_value(\"check_inputs:notification\", None)\n    rows = phantom.collect2(container=container, datapath=[\n        \"get_file_info:action_result.status\",\n        \"get_file_info:action_result.message\",\n        \"get_file_info:action_result.summary.file_found\",\n        \"get_file_info:action_result.data\",\n    ])\n    status, message, found, data = _first(rows, 0), _first(rows, 1), _first(rows, 2), _first(rows, 3)\n    record = _file_record(data)\n    phantom.save_run_data(key=\"route_file_info:file\", value=json.dumps(record))\n\n    stop = None\n    if status != \"success\":\n        stop = (\"not_sent\", \"Nothing was sent to Tehtris: the details of {} on {} could not be read, so the \"\n                            \"playbook did not ask for approval. **Tehtris said:** {}\".format(\n                                _code(path), _code(hostname), _code(message, 2000)))\n    elif found is not True:\n        stop = (\"not_found\", \"Tehtris found no file {} on {}; nothing was sent. Check the full path \"\n                             \"(Windows paths with a drive letter and backslashes).\".format(_code(path), _code(hostname)))\n    if stop:\n        outcome, text = stop\n        phantom.add_note(\n            container=container,\n            note_type=\"general\",\n            title=\"Tehtris Quarantine: {}\".format(hostname),\n            content=\"# Tehtris quarantine: {}\\n\\n{}\".format(_code(hostname), text),\n            note_format=\"markdown\",  # the content is markdown; add_note() defaults to html\n        )\n        phantom.save_run_data(key=\"playbook_output\", value=json.dumps({\n            \"status\": outcome, \"file_found\": found is True, \"quarantined\": False,\n            \"message\": re.sub(r\"[`*]\", \"\", text)}))\n        return\n\n    # The prompt is raised from code, not from a native prompt block: a VPE save\n    # regenerates prompt blocks whole (they have no Custom Code), which would drop\n    # this approver fallback. The callback continues the flow; the return below\n    # stops the generated call to quarantine_decision from also running right away.\n    user = container.get(\"owner_name\", None) or \"soar_local_admin\"\n    lines = [\n        \"**Quarantine this file on {} through Tehtris EDR?**\".format(_code(hostname)),\n        \"\",\n        \"Path: {}\".format(_code(record.get(\"path\") or path, 1000)),\n        \"SHA-256: {}\".format(_code(record.get(\"sha256\"))),\n        \"Original file name: {}\".format(_code(record.get(\"originalFilename\"))),\n        \"Product: {} {}\".format(_code(record.get(\"productName\")), _code(record.get(\"fileVersion\"))),\n        \"Signatures: {}\".format(_code(_signature_text(record.get(\"signatures\")), 1000)),\n        \"\",\n        \"Container: {}\".format(_code(container.get(\"name\"))),\n        \"Reason given: {}\".format(_code(reason) if reason else \"none\"),\n        \"Message to the endpoint's user: {}\".format(_code(notification) if notification else \"none\"),\n        \"\",\n        \"Tehtris moves the file into its quarantine. A restore is done from the Tehtris console, with \"\n        \"the quarantine path this playbook's note records.\",\n    ]\n    response_types = [\n        {\n            \"prompt\": \"Decision\",\n            \"options\": {\n                \"type\": \"list\",\n                \"required\": True,\n                \"choices\": [\n                    _QUARANTINE,\n                    _DO_NOT_QUARANTINE,\n                ],\n            },\n        },\n    ]\n    phantom.save_run_data(key=\"route_file_info:approver\", value=json.dumps(user))\n    phantom.prompt2(container=container, user=user, role=None, message=\"\\n\".join(lines), respond_in_mins=_PROMPT_MINUTES, name=\"quarantine_approval\", parameters=[], response_types=response_types, callback=quarantine_decision)\n\n    return\n\n    ################################################################################\n    ################################################################################\n    ################################################################################\n",
+                    "warnings": {}
+                },
+                "5": {
+                    "x": 190,
+                    "y": 600,
+                    "id": "5",
+                    "data": {
+                        "id": "5",
+                        "type": "code",
+                        "advanced": {
+                            "join": [],
+                            "customName": "quarantine decision",
+                            "description": "Read the analyst's answer; anything but Quarantine file stops with a note.",
+                            "customNameId": 0
+                        },
+                        "functionId": 4,
+                        "functionName": "quarantine_decision",
+                        "inputParameters": [],
+                        "outputVariables": [
+                            "analyst_response"
+                        ]
+                    },
+                    "type": "code",
+                    "errors": {},
+                    "userCode": "    ################################################################################\n    ################################################################################\n    ################################################################################\n\n    hostname = _run_value(\"check_inputs:hostname\", \"\")\n    path = _run_value(\"check_inputs:path\", \"\")\n    approver = _run_value(\"route_file_info:approver\", \"\")\n    run_id = phantom.get_playbook_run_id_()\n\n    answer, prompt_status = None, \"expired\"\n    try:\n        approval_url = phantom.build_phantom_rest_url(\"approval\") + \\\n            \"?_filter_playbook_run={}&_filter_name=\\\"quarantine_approval\\\"&sort=id&order=desc&page_size=1\".format(run_id)\n        approvals = phantom.requests.get(uri=approval_url, verify=False).json().get(\"data\") or []\n    except Exception as e:\n        phantom.error(\"Could not fetch the approval record for playbook_run {}: {}\".format(run_id, str(e)))\n        approvals = []\n    if approvals:\n        approval = approvals[0]\n        responses = approval.get(\"responses\") or []\n        if approval.get(\"status\") == \"approved\" and responses and responses[0]:\n            answer, prompt_status = responses[0], \"answered\"\n        else:\n            prompt_status = approval.get(\"status\") or \"expired\"\n    else:\n        phantom.error(\"No approval record found for playbook_run {}\".format(run_id))\n\n    quarantine_decision__analyst_response = answer or prompt_status\n    phantom.save_run_data(key=\"quarantine_decision:analyst_response\", value=json.dumps(quarantine_decision__analyst_response))\n\n    if answer != _QUARANTINE:\n        if answer == _DO_NOT_QUARANTINE:\n            outcome, text = \"declined\", \"{} declined the quarantine of {} on {}; nothing was sent to Tehtris.\".format(\n                _code(approver), _code(path), _code(hostname))\n        else:\n            outcome, text = \"expired\", (\"The quarantine prompt for {} on {} got no answer from {} within {} minutes \"\n                                        \"(status {}); nothing was sent to Tehtris.\").format(\n                _code(path), _code(hostname), _code(approver), _PROMPT_MINUTES, _code(prompt_status))\n        record = _run_value(\"route_file_info:file\", {})\n        phantom.add_note(\n            container=container,\n            note_type=\"general\",\n            title=\"Tehtris Quarantine: {}\".format(hostname),\n            content=\"# Tehtris quarantine: {}\\n\\n{}\".format(_code(hostname), text),\n            note_format=\"markdown\",  # the content is markdown; add_note() defaults to html\n        )\n        phantom.save_run_data(key=\"playbook_output\", value=json.dumps({\n            \"status\": outcome, \"file_found\": True, \"sha256\": record.get(\"sha256\"), \"quarantined\": False,\n            \"analyst_response\": quarantine_decision__analyst_response,\n            \"message\": text.replace(\"`\", \"\")}))\n        return\n\n    ################################################################################\n    ################################################################################\n    ################################################################################\n",
+                    "warnings": {}
+                },
+                "6": {
+                    "x": 190,
+                    "y": 750,
+                    "id": "6",
+                    "data": {
+                        "id": "6",
+                        "tab": "byConnector",
+                        "loop": {
+                            "enabled": false,
+                            "pauseUnit": "m",
+                            "conditions": [
+                                {
+                                    "type": "if",
+                                    "logic": "and",
+                                    "comparisons": [
+                                        {
+                                            "op": "==",
+                                            "param": "",
+                                            "value": "",
+                                            "comparisonKey": "comparison_key_0"
+                                        }
+                                    ],
+                                    "conditionKey": "condition_key_0",
+                                    "conditionIndex": 0
+                                }
+                            ],
+                            "pauseValue": 2,
+                            "exitAfterUnit": "m",
+                            "exitLoopAfter": 2,
+                            "exitAfterValue": 10,
+                            "exitConditionEnabled": false
+                        },
+                        "type": "action",
+                        "action": "quarantine file",
+                        "advanced": {
+                            "join": [],
+                            "customName": "quarantine file",
+                            "description": "Ask Tehtris to quarantine the file (refused for a shared hostname).",
+                            "customNameId": 0
+                        },
+                        "connector": "Tehtris EDR",
+                        "actionType": "contain",
+                        "functionId": 5,
+                        "parameters": {
+                            "path": "check_inputs:custom_function:path",
+                            "hostname": "check_inputs:custom_function:hostname",
+                            "notification": "check_inputs:custom_function:notification"
+                        },
+                        "connectorId": "bf34e3e5-c6da-49b0-8dbc-cd4f2e080191",
+                        "functionName": "quarantine_file",
+                        "connectorConfigs": [
+                            "tehtris_mock_8446"
+                        ],
+                        "connectorVersion": "v1",
+                        "requiredParameters": [
+                            {
+                                "field": "hostname",
+                                "default": "",
+                                "data_type": "string"
+                            },
+                            {
+                                "field": "path",
+                                "default": "",
+                                "data_type": "string"
+                            }
+                        ]
+                    },
+                    "type": "action",
+                    "errors": {},
+                    "userCode": "    ################################################################################\n    ################################################################################\n\n    # Write your custom code here...\n\n    ################################################################################\n    ################################################################################\n",
+                    "warnings": {}
+                },
+                "7": {
+                    "x": 190,
+                    "y": 900,
+                    "id": "7",
+                    "data": {
+                        "id": "7",
+                        "tab": "byConnector",
+                        "loop": {
+                            "enabled": false,
+                            "pauseUnit": "m",
+                            "conditions": [
+                                {
+                                    "type": "if",
+                                    "logic": "and",
+                                    "comparisons": [
+                                        {
+                                            "op": "==",
+                                            "param": "",
+                                            "value": "",
+                                            "comparisonKey": "comparison_key_0"
+                                        }
+                                    ],
+                                    "conditionKey": "condition_key_0",
+                                    "conditionIndex": 0
+                                }
+                            ],
+                            "pauseValue": 2,
+                            "exitAfterUnit": "m",
+                            "exitLoopAfter": 2,
+                            "exitAfterValue": 10,
+                            "exitConditionEnabled": false
+                        },
+                        "type": "action",
+                        "action": "list quarantined files",
+                        "advanced": {
+                            "join": [],
+                            "customName": "list quarantined",
+                            "description": "List the host's quarantine, so the note can record the path to restore from.",
+                            "customNameId": 0
+                        },
+                        "connector": "Tehtris EDR",
+                        "actionType": "investigate",
+                        "functionId": 6,
+                        "parameters": {
+                            "hostname": "check_inputs:custom_function:hostname"
+                        },
+                        "connectorId": "bf34e3e5-c6da-49b0-8dbc-cd4f2e080191",
+                        "functionName": "list_quarantined",
+                        "connectorConfigs": [
+                            "tehtris_mock_8446"
+                        ],
+                        "connectorVersion": "v1",
+                        "requiredParameters": [
+                            {
+                                "field": "hostname",
+                                "default": "",
+                                "data_type": "string"
+                            }
+                        ]
+                    },
+                    "type": "action",
+                    "errors": {},
+                    "userCode": "    ################################################################################\n    ################################################################################\n\n    # Write your custom code here...\n\n    ################################################################################\n    ################################################################################\n",
+                    "warnings": {}
+                },
+                "8": {
+                    "x": 190,
+                    "y": 1050,
+                    "id": "8",
+                    "data": {
+                        "id": "8",
+                        "type": "code",
+                        "advanced": {
+                            "join": [],
+                            "customName": "note result",
+                            "description": "Write the Tehtris Quarantine note: request outcome and the host's quarantine paths.",
+                            "customNameId": 0
+                        },
+                        "functionId": 7,
+                        "functionName": "note_result",
+                        "inputParameters": [
+                            "quarantine_file:action_result.status",
+                            "quarantine_file:action_result.message",
+                            "quarantine_file:action_result.summary.applied",
+                            "list_quarantined:action_result.status",
+                            "list_quarantined:action_result.message",
+                            "list_quarantined:action_result.data.*.quarantinePath",
+                            "quarantine_decision:custom_function:analyst_response"
+                        ],
+                        "outputVariables": []
+                    },
+                    "type": "code",
+                    "errors": {},
+                    "userCode": "    ################################################################################\n    ################################################################################\n    ################################################################################\n\n    hostname = _run_value(\"check_inputs:hostname\", \"\")\n    path = _run_value(\"check_inputs:path\", \"\")\n    reason = _run_value(\"check_inputs:reason\", \"\")\n    notification = _run_value(\"check_inputs:notification\", None)\n    approver = _run_value(\"route_file_info:approver\", \"\")\n    answer = _run_value(\"quarantine_decision:analyst_response\", None)\n    record = _run_value(\"route_file_info:file\", {})\n\n    send = phantom.collect2(container=container, datapath=[\"quarantine_file:action_result.status\",\n                                                           \"quarantine_file:action_result.message\",\n                                                           \"quarantine_file:action_result.summary.applied\"])\n    send_status, send_message, applied = _first(send, 0), _first(send, 1), _first(send, 2)\n    listing = phantom.collect2(container=container, datapath=[\"list_quarantined:action_result.status\",\n                                                              \"list_quarantined:action_result.message\",\n                                                              \"list_quarantined:action_result.data.*.quarantinePath\"])\n    list_status, list_message = _first(listing, 0), _first(listing, 1)\n    quarantine_paths = [row[2] for row in listing if len(row) > 2 and row[2]]\n\n    if send_status != \"success\":\n        status, quarantined = \"failed\", False\n        headline = \"Tehtris refused or failed the quarantine of {} on {}.\".format(_code(path), _code(hostname))\n    elif applied is False:\n        status, quarantined = \"queued\", False\n        headline = \"Tehtris queued the quarantine of {} on {}; it is not applied yet.\".format(_code(path), _code(hostname))\n    else:\n        status, quarantined = \"quarantined\", True\n        headline = \"{} on {} is quarantined by Tehtris EDR.\".format(_code(path), _code(hostname))\n\n    lines = [\n        \"# Tehtris quarantine: {}\".format(_code(hostname)),\n        \"\",\n        headline,\n        \"\",\n        \"- **Approved by:** {} ({})\".format(_code(approver), _code(answer)),\n        \"- **Reason:** {}\".format(_code(reason) if reason else \"none given\"),\n        \"- **File:** {}\".format(_code(record.get(\"path\") or path, 1000)),\n        \"- **SHA-256:** {}\".format(_code(record.get(\"sha256\"))),\n        \"- **Original file name:** {}\".format(_code(record.get(\"originalFilename\"))),\n        \"- **Signatures:** {}\".format(_code(_signature_text(record.get(\"signatures\")), 1000)),\n        \"- **Message to the endpoint's user:** {}\".format(_code(notification) if notification else \"none\"),\n        # A refusal for a shared hostname lists every endpoint's uuid: keep it whole.\n        \"- **Quarantine request:** {} \u2014 {}\".format(_code(send_status or \"not run\"), _code(send_message, 2000)),\n        \"\",\n        \"## Quarantine of {} after the request\".format(_code(hostname)),\n        \"\",\n    ]\n    if list_status != \"success\":\n        lines.append(\"Could not be listed: {}\".format(_code(list_message or list_status or \"not run\", 2000)))\n    elif not quarantine_paths:\n        lines.append(\"Empty.\")\n    else:\n        # Tehtris lists quarantine paths only, so the file cannot be matched to one\n        # of them for certain: every path is listed, for a restore from the console.\n        lines.append(\"To restore a file, use its path below (not the original path) in the Tehtris console \"\n                     \"or with the connector's restore file action.\")\n        lines.append(\"\")\n        budget = _NOTE_MAX_CHARS - len(\"\\n\".join(lines)) - 200\n        shown = 0\n        for quarantine_path in quarantine_paths:\n            line = \"- {}\".format(_code(quarantine_path, 1000))\n            if budget - len(line) - 1 < 0:\n                break\n            lines.append(line)\n            budget -= len(line) + 1\n            shown += 1\n        if shown < len(quarantine_paths):\n            lines.append(\"- \u2026 {} more are in the list_quarantined action result.\".format(len(quarantine_paths) - shown))\n\n    phantom.add_note(\n        container=container,\n        note_type=\"general\",\n        title=\"Tehtris Quarantine: {}\".format(hostname),\n        content=\"\\n\".join(lines),\n        note_format=\"markdown\",  # the content is markdown; add_note() defaults to html\n    )\n    phantom.save_run_data(key=\"playbook_output\", value=json.dumps({\n        \"status\": status,\n        \"file_found\": True,\n        \"sha256\": record.get(\"sha256\"),\n        \"quarantined\": quarantined,\n        \"quarantine_paths\": quarantine_paths,\n        \"analyst_response\": answer,\n        \"message\": re.sub(r\"[`*]\", \"\", headline),\n    }))\n\n    ################################################################################\n    ################################################################################\n    ################################################################################\n",
+                    "warnings": {}
+                }
+            },
+            "notes": "",
+            "description": "Data playbook (UC16 PB5) run by an analyst on any container. Quarantines one file on a host through Tehtris EDR after an analyst approves it in a prompt: reads the file's details, quarantines it, lists the host's quarantine, and records the outcome and the quarantine paths in a Tehtris Quarantine note.",
+            "globalCustomCode": "################################################################################\n################################################################################\n\n# Design notes (kept here because a VPE save replaces the module docstring):\n# UC16 PB5 -- see docs/usecases/uc16_tehtris_edr_implementation_plan.md\n# (decision 9, proposal P4). Quarantine only: a restore is done from the\n# Tehtris console with the quarantine path this playbook's note records\n# (\"restore file\" takes the path IN quarantine, not the original path).\n# Always an analyst prompt, raised from a code block so the approver can fall\n# back from the container owner to soar_local_admin (UC2 PB4/PB5 precedent).\n# Nothing is sent when the file details cannot be read -- agent offline (504),\n# unknown host -- (decision 8): no persist, so nothing runs unseen later.\n\nimport re\n\n_PROMPT_MINUTES = 30\n_QUARANTINE = \"Quarantine file\"\n_DO_NOT_QUARANTINE = \"Do not quarantine\"\n_CELL_MAX_CHARS = 300\n_NOTE_MAX_CHARS = 20000\n\n\ndef _code(value, limit=_CELL_MAX_CHARS):\n    \"\"\"A value from Tehtris or an input as an inline code span: one line, no\n    backticks, cut at limit, so markup and links in it stay inert.\"\"\"\n    if value is None or value == \"\":\n        return \"\u2014\"\n    text = \" \".join(str(value).split()).replace(\"`\", \"'\")\n    if len(text) > limit:\n        text = text[:limit - 1] + \"\u2026\"\n    return \"`{}`\".format(text)\n\n\ndef _first(rows, index=0):\n    \"\"\"Value `index` of the first collect2 row, or None.\"\"\"\n    if rows and len(rows[0]) > index:\n        return rows[0][index]\n    return None\n\n\ndef _file_record(data):\n    \"\"\"The FileInfoData dict from get file info's action-result data, without\n    the connector's raw_json copy; {} when there is none.\"\"\"\n    for item in data or []:\n        if isinstance(item, dict):\n            return {k: v for k, v in item.items() if k != \"raw_json\"}\n    return {}\n\n\ndef _signature_text(signatures):\n    \"\"\"'publisher (validity, type)' for each signature, or 'unsigned'.\"\"\"\n    parts = []\n    for sig in signatures or []:\n        if isinstance(sig, dict):\n            parts.append(\"{} ({}, {})\".format(sig.get(\"publisherName\") or \"unknown publisher\",\n                                              sig.get(\"validity\") or \"unknown\", sig.get(\"type\") or \"unknown\"))\n    return \"; \".join(parts) if parts else \"unsigned\"\n\n\ndef _run_value(key, default):\n    raw = phantom.get_run_data(key=key)\n    return json.loads(raw) if raw else default\n################################################################################\n################################################################################\n"
+        },
+        "input_spec": [
+            {
+                "name": "hostname",
+                "contains": [
+                    "host name"
+                ],
+                "description": "Required. The endpoint's hostname as Tehtris EDR shows it (exact match, case-insensitive)."
+            },
+            {
+                "name": "path",
+                "contains": [
+                    "file path"
+                ],
+                "description": "Required. The file's full path on the endpoint (Windows: drive letter and backslashes)."
+            },
+            {
+                "name": "reason",
+                "contains": [],
+                "description": "Optional. Why the file should be quarantined; shown in the prompt and the note."
+            },
+            {
+                "name": "notification",
+                "contains": [],
+                "description": "Optional. A message Tehtris shows the endpoint's user (Windows only); blank sends none."
+            }
+        ],
+        "output_spec": [
+            {
+                "name": "status",
+                "contains": [],
+                "metadata": {},
+                "datapaths": [],
+                "deduplicate": false,
+                "description": "quarantined, queued, not_found (no such file), not_sent (details unreadable), declined, expired, failed, or error."
+            },
+            {
+                "name": "file_found",
+                "contains": [],
+                "metadata": {},
+                "datapaths": [],
+                "deduplicate": false,
+                "description": "True when Tehtris returned the file's details."
+            },
+            {
+                "name": "sha256",
+                "contains": [],
+                "metadata": {},
+                "datapaths": [],
+                "deduplicate": false,
+                "description": "The file's SHA-256 from Tehtris."
+            },
+            {
+                "name": "quarantined",
+                "contains": [],
+                "metadata": {},
+                "datapaths": [],
+                "deduplicate": false,
+                "description": "True when Tehtris applied the quarantine request."
+            },
+            {
+                "name": "quarantine_paths",
+                "contains": [],
+                "metadata": {},
+                "datapaths": [],
+                "deduplicate": false,
+                "description": "Every path in the host's quarantine after the request (restore takes one of these)."
+            },
+            {
+                "name": "analyst_response",
+                "contains": [],
+                "metadata": {},
+                "datapaths": [],
+                "deduplicate": false,
+                "description": "The analyst's answer: Quarantine file, Do not quarantine, or the prompt status."
+            },
+            {
+                "name": "message",
+                "contains": [],
+                "metadata": {},
+                "datapaths": [],
+                "deduplicate": false,
+                "description": "One-line outcome."
+            }
+        ],
+        "playbook_type": "data",
+        "python_version": "3.13",
+        "schema": "5.0.24",
+        "version": "8.6.0.530",
+        "playbook_trigger": "artifact_created"
+    },
+    "create_time": "2026-10-05T19:00:06.697170Z",
+    "draft_mode": false,
+    "labels": [
+        "*"
+    ],
+    "tags": [
+        "tehtris_edr",
+        "uc16",
+        "quarantine"
+    ]
+}

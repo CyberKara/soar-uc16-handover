@@ -3,6 +3,7 @@
   "app_name": "Tehtris EDR",
   "configuration": {
     "api_key": "<<SET ME \u2014 see HANDOVER.md, re-enter from your vault/CMDB>>",
+    "timeout": 30,
     "base_url": "<<SET ME \u2014 this was the LAB's own internal address, not a real target address. Replace with your target system's real value.>>",
     "verify_server_cert": false
   },

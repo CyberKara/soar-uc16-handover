@@ -17,8 +17,8 @@
         }
     ],
     "license": "Apache-2.0; portions Copyright (c) Splunk, 2024-2026",
-    "app_version": "1.2.1",
-    "utctime_updated": "2026-09-08T00:00:00.000000Z",
+    "app_version": "1.2.2",
+    "utctime_updated": "2026-10-01T00:00:00.000000Z",
     "package_name": "phantom_tehtris",
     "main_module": "tehtris_connector.py",
     "min_phantom_version": "6.3.0",
@@ -41,6 +41,13 @@
             "description": "Verify server SSL certificate",
             "default": true,
             "order": 2
+        },
+        "timeout": {
+            "data_type": "numeric",
+            "description": "Seconds to wait for each Tehtris API call (default 30, at most 300)",
+            "required": false,
+            "default": 30,
+            "order": 3
         }
     },
     "actions": [

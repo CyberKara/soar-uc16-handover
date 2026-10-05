@@ -30,6 +30,8 @@ import requests
 from bs4 import BeautifulSoup
 from phantom.action_result import ActionResult
 from phantom.base_connector import BaseConnector
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 from tehtris_consts import *
 
@@ -52,6 +54,8 @@ class TehtrisConnector(BaseConnector):
         self._base_url = None
         self._api_key = None
         self._last_status_code = None
+        self._session = None
+        self._timeout = TEHTRIS_DEFAULT_TIMEOUT
 
     def _process_empty_response(self, response, action_result, status_hints=None):
         # 204 is Tehtris' success reply for writes and for "no content"; 202 means
@@ -154,9 +158,7 @@ class TehtrisConnector(BaseConnector):
 
         resp_json = None
 
-        try:
-            request_func = getattr(requests, method)
-        except AttributeError:
+        if method not in ("get", "post", "put", "patch", "delete"):
             return RetVal(
                 action_result.set_status(phantom.APP_ERROR, f"Invalid method: {method}"),
                 resp_json,
@@ -167,9 +169,11 @@ class TehtrisConnector(BaseConnector):
         username = "api"
         password = self._api_key
 
-        kwargs.setdefault("timeout", TEHTRIS_DEFAULT_TIMEOUT)
+        kwargs.setdefault("timeout", self._timeout)
         try:
-            r = request_func(
+            # The session retries 429/500/502/503 with backoff, GET/PUT only (initialize()).
+            r = self._session.request(
+                method.upper(),
                 url,
                 auth=(username, password),  # basic authentication
                 verify=config.get("verify_server_cert", True),
@@ -1028,11 +1032,54 @@ class TehtrisConnector(BaseConnector):
         self._base_url = config.get("base_url")
         self._api_key = config.get("api_key")
 
+        timeout = config.get("timeout")
+        if timeout in (None, ""):
+            self._timeout = TEHTRIS_DEFAULT_TIMEOUT
+        else:
+            try:
+                self._timeout = float(timeout)
+            except (TypeError, ValueError):
+                self._timeout = 0
+            if not 0 < self._timeout <= TEHTRIS_MAX_TIMEOUT:
+                return self.set_status(
+                    phantom.APP_ERROR,
+                    f"Asset field 'timeout' must be a number of seconds between 1 and {TEHTRIS_MAX_TIMEOUT}; got {timeout!r}",
+                )
+
+        # One session per action run (dev-rules NFR-20). Retries cover rate
+        # limiting (429, honouring Retry-After) and transient server errors on
+        # idempotent methods only, so an isolation or quarantine POST/PATCH is
+        # never replayed. 504 is not retried: on the /live/ endpoints Tehtris
+        # uses it for an agent that is not connected, which a retry seconds later
+        # does not change. raise_on_status=False hands the last reply to
+        # _process_response(), so the vendor's status hint still reaches the user.
+        retry = Retry(
+            total=TEHTRIS_MAX_RETRIES,
+            # A read timeout is not retried: Tehtris may have acted on the call,
+            # and the asset's timeout must stay the real bound on a slow reply.
+            read=0,
+            backoff_factor=TEHTRIS_RETRY_BACKOFF,
+            status_forcelist=TEHTRIS_RETRY_STATUSES,
+            allowed_methods=frozenset({"GET", "PUT"}),
+            respect_retry_after_header=True,
+            raise_on_status=False,
+        )
+        self._session = requests.Session()
+        # Ignore the host environment (proxy variables, ~/.netrc, CA bundle
+        # variables): they would silently change where the call goes or which
+        # credentials it carries (fleet trust_env item, soar-connectors dev-rules).
+        self._session.trust_env = False
+        adapter = HTTPAdapter(max_retries=retry)
+        self._session.mount("https://", adapter)
+        self._session.mount("http://", adapter)
+
         return phantom.APP_SUCCESS
 
     def finalize(self):
         # Save the state, this data is saved across actions and app upgrades
         self.save_state(self._state)
+        if self._session is not None:
+            self._session.close()
         return phantom.APP_SUCCESS
 
 

@@ -20,7 +20,7 @@ What differs from upstream:
 |---|---|---|---|
 | `appid` | `d91ead7b-…` | `bf34e3e5-…` | dev-rules: never reuse another connector's appid |
 | `name` | Tehtris | Tehtris EDR | distinguishes this fork in the GUI app list |
-| `app_version` | 1.0.1 | 1.2.1 | signals "upstream 1.0.1 + local extensions" |
+| `app_version` | 1.0.1 | 1.2.2 | signals "upstream 1.0.1 + local extensions" |
 | `python_version` | `3.9, 3.13` | `3.13` | dev-rules: soar8 targets 3.13 only |
 | `publisher` | Splunk | Ted | the local modifications are not Splunk's work |
 | `license` | Splunk copyright | Apache-2.0 + Splunk copyright | accurate attribution for a fork |
@@ -144,13 +144,18 @@ the agent must be connected (504 otherwise).
     same exact, case-insensitive rule.
 12. **No request timeout.** Upstream sent every call without `timeout=`, so a
     stalled appliance could hang an action indefinitely. Every call now has a
-    30-second timeout (dev-rules FR-05's default) and reports it clearly. **Not
-    yet done:** FR-05's *configurable* timeout (asset field), NFR-03's retry with
-    backoff (`urllib3.Retry` on a `Session`, which would also carry
-    `trust_env = False`), and 429 handling — the reference lists 429 on the
-    inventory and processes calls, and SEKOIA's production Tehtris collector
-    rate-limits to 5 requests/minute with retries. Tracked in the Splunk
-    `docs/next-steps.md` UC16 tasks.
+    30-second timeout (dev-rules FR-05's default) and reports it clearly.
+    **Since v1.2.2** the timeout is the optional asset field `timeout` (1–300 s),
+    and every call goes through one `requests.Session` per action run
+    (dev-rules NFR-03/NFR-20) with `trust_env = False` and a `urllib3.Retry`:
+    up to 3 retries with exponential backoff on 429, 500, 502 and 503,
+    honouring `Retry-After`, **on GET and PUT only** — an isolation or quarantine
+    POST/PATCH is never replayed. 504 is not retried (on `/live/` calls Tehtris
+    uses it for an agent that is not connected), nor is a read timeout (the
+    asset's timeout stays the real bound). Why 429 matters: the reference lists
+    it on the inventory and processes calls, every host-scoped action goes
+    through the inventory, and SEKOIA's production Tehtris collector
+    rate-limits to 5 requests/minute with retries.
 
 Also added per the repo checklist: `undo` pairing between
 `send for isolation` ⇄ `remove from isolation`, `allow_list` on the
@@ -202,6 +207,7 @@ Only a real tenant settles those — the remaining reconciliation debt.
 | `base_url` | **Must end in `/api`** — e.g. `https://<trigram>.api.tehtris.net/api`. The connector appends paths like `/edr/v2/inventory` with no prefix of its own, so omitting `/api` makes every action 404. "Trigram" is Tehtris' term for the per-tenant subdomain token. |
 | `api_key` | API key generated in the tenant under *parameters → API keys*. Sent as HTTP basic auth with the username hardcoded to `api`. |
 | `verify_server_cert` | Defaults to true (upstream v1.0.1 fix). |
+| `timeout` | Optional, seconds per API call, default 30, at most 300 (v1.2.2). Anything else fails the action at start-up with a message naming the field. |
 
 The reference declares plain HTTP basic auth without naming the username; the
 `api` username is corroborated by upstream's own code and by Swimlane's
@@ -215,7 +221,8 @@ real-appliance 401 turned out to be password fields not surviving the air gap).
 `tests/` (excluded from the package) stubs the `phantom` modules and runs every
 action through `handle_action` over real HTTP against `mock_tehtris.py`
 (`soar8/migration/mock-backend/`, port 8448), plus manifest↔connector and
-connector↔vendor-reference checks (88 tests). Since 2026-09-29 the mock follows
+connector↔vendor-reference checks, and `test_session.py`, which drives the
+retry rules against a scripted local HTTP server (103 tests). Since 2026-09-29 the mock follows
 the vendor reference: substring inventory search, 204/202/201 replies, 422
 validation errors, a duplicate hostname, an offline agent (504), a host behind
 a local proxy (409), a Linux host (systemInfo 501), file info and software, and
@@ -237,7 +244,7 @@ A pristine upstream v1.0.1 checkout for diffing lives (gitignored) at
 - [x] Forked, extended, manifest and connector consistent
 - [x] `mock_tehtris.py` (UC16 dependency D2), rebuilt 2026-09-29 against the
       vendor OpenAPI reference
-- [x] Local suite: all 17 actions against the mock + reference checks (88 tests)
+- [x] Local suite: all 17 actions against the mock + reference checks + session retry rules (103 tests)
 - [x] v1.1.0 packaged and installed on soar8 — app **201**, 12 actions
       registered; asset **`tehtris_mock`** (id 24, pointed at the mock's `:8448/api`)
 - [x] v1.2.1 (v1.2.0's exact hostname match, netstat, isolation replies, 30 s
@@ -245,8 +252,9 @@ A pristine upstream v1.0.1 checkout for diffing lives (gitignored) at
       not-found) installed in place on soar8 2026-09-30 — app **201**, 17 actions
       registered, asset 24 still bound; the App Debugger's Test Connectivity loads
       it on Python 3.13.11 and stops at the firewall below
-- [ ] Retry/backoff + 429 handling on a `Session` (dev-rules NFR-03/NFR-20),
-      configurable timeout (FR-05)
+- [x] v1.2.2: retry/backoff + 429 handling on a `Session` with
+      `trust_env = False` (dev-rules NFR-03/NFR-20), configurable timeout
+      (FR-05); 103 tests
 - [ ] `test connectivity` on soar8 — blocked: the ansible controller's firewall
       does not admit soar8 on 8448 (`No route to host`); Ansible-project change
 - [ ] Real-tenant check of what the reference leaves open (events fields,

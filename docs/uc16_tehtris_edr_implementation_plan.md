@@ -1,8 +1,25 @@
 # Tehtris EDR — Isolate + Security Posture (UC16) — Implementation Plan
 
-**Status:** [x] planned | [ ] built | [ ] E2E validated | [ ] code review fixes | [ ] VPE polish | [ ] released
+**Status:** [x] planned | [x] built | [ ] E2E validated (mock only — a real tenant is still owed) | [ ] code review fixes | [ ] VPE polish | [ ] released
 
-> **Design approved 2026-09-30 (Phase 1 gate cleared) — no playbook code yet.**
+> **2026-10-05 — all five playbooks deployed (ids 356-360) and connector v1.2.2
+> installed on soar8 (app 201); every designed path passed against the 8446
+> mock.** PB3/PB5's six no-prompt paths (runs 6062-6067), then the prompt paths
+> answered by the user in the GUI: PB4 expiry (6059) and end to end (6089),
+> PB3 decline (6090) and release with the tag swap (6098), PB5 quarantine
+> (6091) and decline (6093) — container 1380. v1.2.2 passed Test Connectivity,
+> a read and a PUT write through asset 25. Still open: D2b, the handover
+> refresh (user: once all paths passed — now), the airgapped team's questions
+> and the real-tenant checks. Detail: "Next step".
+>
+> **2026-10-01 — all five playbooks built; only PB1/PB2 deployed and tested.**
+> PB2's five prompt paths passed live (below). PB3 release, PB4 orchestrator and
+> PB5 quarantine were built and passed the three gates (userCode sync, VPE shape,
+> SOAR validator 0/0) but were not deployed or run, and neither were PB2's
+> two note fixes. Connector **v1.2.2** (retries, timeout field, `trust_env` off)
+> was built and tested (103) but not installed.
+>
+> **Design approved 2026-09-30 (Phase 1 gate cleared).**
 > The approved design is "Architecture" below (decisions 1–9, proposals P1–P5).
 > Target environment: **soar8** (port 8443), SOAR **8.6.0.530**.
 
@@ -712,12 +729,44 @@ Isolation is sent without `power` (Tehtris default `soft`, the tenant's isolatio
 policy) and without `persist`. A write on a hostname shared by several endpoints
 is refused by the connector; the note lists their uuids.
 
+**Prompt paths tested 2026-10-01** on container 1380 against the 8446 mock
+(live id 253; prompts answered over `POST /rest/approval/<id>/respond`, a
+dev-test mechanic):
+
+| Run | Host | Answer | Outcome |
+|---|---|---|---|
+| 3458 | `ws-finance-01` | Isolate host | `isolated`, verified; tags `FIN_workstation` → `FIN_workstation,soar-isolated` |
+| 3460 | `srv-db-02` | Do not isolate | `declined`, nothing sent |
+| 3461 | `ws-proxy-11` | Isolate host | `failed` — Tehtris 409 (local proxy), tag skipped |
+| 3462 | `ws-reimaged-05` | Isolate host | `failed` — connector refuses the write, two endpoints share the hostname |
+| 3459 | `ws-hr-070` | none (30 min) | `expired`, nothing sent |
+
+Two note defects fixed in the repo after these runs, **not yet deployed**: a
+failed request said the tag was skipped because "the isolation is not confirmed
+yet" (now "the isolation request failed"), and the shared-hostname refusal was
+cut at 300 characters, losing the uuid list (now kept to 2,000). `queued` and
+`applied_not_confirmed` cannot be produced through the mock (the connector sends
+no `persist`; the mock's read-back is immediate). The tag builder's other cases
+— no tags yet + `tag_trigram`, a bad trigram, a custom separator, the 64-character
+limit, the swap in PB3 — passed offline (13 cases, the playbooks' own Global
+Custom Code). Custom list `tehtris_edr_settings` exists on soar8 (id 6, rows
+`tag_trigram`/`tag_separator`, both empty).
+
 ### PB3 — `tehtris_host_unisolate` (data)
 
 Mirror of PB2 with the same always-prompt gate (decision 2) and the same offline
 stop (decision 8): `pre_check_isolation` (not isolated → note, stop) → prompt →
 `remove_from_isolation` → `verify_isolation` → `read_host_tags` → `build_tag`
 (swap `soar-isolated` for `soar-released`, P2) → `update tag` → note.
+
+**Built 2026-10-01; deployed 2026-10-05 (id 358); every path passed against the
+mock, the tag swap included ("Next step").** Generated from PB2 in the same VPE shape:
+inputs `hostname`, `reason` (no posture summary); outputs `status` (`released`,
+`applied_not_confirmed`, `queued`, `not_isolated`, `not_sent`, `declined`,
+`expired`, `failed`, `error`), `release_requested`, `release_verified`,
+`tag_applied`, `analyst_response`, `message`; prompt `release_approval`
+("Release host" / "Do not release"); tags only when the read-back shows the host
+not isolated.
 
 ### PB4 — `tehtris_edr_response` (data, orchestrator) — optional for v1
 
@@ -733,6 +782,16 @@ on_start → [Playbook] run_posture  (local/tehtris_host_posture, inputs: hostna
 
 Defer until PB1–PB3 are validated individually; it adds no capability, only
 convenience.
+
+**Built 2026-10-01; deployed 2026-10-05 (id 360); passed end to end (run 6089)
+and on an expired prompt (run 6059) ("Next step").** Blocks: `check_inputs` → `run_posture`
+(synchronous, inputs `hostname`, `lookback_minutes`) → `run_isolate` (synchronous,
+inputs `hostname`, `reason`, `posture_summary` ← `run_posture:playbook_output:summary`)
+→ `report_outcome`. Outputs `status` (PB2's), `posture_status`, `isolation_status`,
+`message`. The playbook-block code follows the 8.6 VPE generator, read from
+soar8's bundle `7552.*.js` (`determinePlaybookParams`, `constructValueMappingCode`):
+`inputs = {...}` before the Custom Code, then
+`phantom.playbook("local/<child>", container=container, name=..., callback=..., inputs=inputs)`.
 
 ### PB5 — `tehtris_file_quarantine` (data) — decision 9
 
@@ -766,6 +825,14 @@ The listing cannot be matched to the original path (the reply holds quarantine
 paths only), so `quarantined` reflects `quarantine file`'s own result (204
 applied; 409 conflict → failed) and the note shows the listing as evidence.
 
+**Built 2026-10-01; deployed 2026-10-05 (id 359); every path passed against the
+mock ("Next step").** As drafted; the prompt shows path, SHA-256,
+original name, product/version, signatures, reason and the notification text.
+`status`: `quarantined`, `queued`, `not_found` (no such file), `not_sent`
+(details unreadable — offline agent, unknown host), `declined`, `expired`,
+`failed`, `error`. A shared hostname gets past `get file info` (a read uses the
+newest endpoint) and is refused at `quarantine file`, like PB2.
+
 ### Connector actions used
 
 | Action | Used by |
@@ -784,33 +851,80 @@ blast radius — its own design pass if ever wanted).
 
 ## Next step
 
-**Phase 1 is done (design approved 2026-09-30) and connector v1.2.1 is live on
-soar8. The one external blocker is D2b.**
+**Phase 1 is done (design approved 2026-09-30); all five playbooks and connector
+v1.2.2 are live on soar8 and every designed path passed against the mock
+(2026-10-05). Open: D2b, the handover refresh, the real tenant.**
 
 1. **D2b (Ansible project): `mock-tehtris.service` + open port 8448 to soar8.**
    Until then every action on soar8 fails "No route to host" and the mock is
    hand-run only. Mirror `mock-efficientip-ddi.service`. Still not filed in
    `/data/ansible/docs/next-steps.md` (checked 2026-09-30) — an Ansible session
    has to file and do it.
-2. **Phase 2 (D4):** PB1 **built and tested 2026-09-30**, saved-version repo base
-   (above). PB2 `tehtris_host_isolate` **built 2026-09-30** (live id 253): the
-   no-prompt paths pass (already isolated, offline, unknown host, blank); the
-   prompt paths (approve → isolate → verify → tag, decline, proxy 409, shared
-   hostname) are **not tested yet**, and custom list `tehtris_edr_settings` does not
-   exist on soar8 yet. Next: PB2 → PB3 → PB5 (PB4 optional), plus the custom list
-   `tehtris_edr_settings` (P3). `tehtris_edr` is in the three deploy-side lists
-   (`deploy.py`, `pull_soar.py`, `snapshot.py`); `export_handover.py`'s registry
-   waits for the user's export decision. Until D2b, test against the mock
-   hand-run on port 8446 (asset `tehtris_mock_8446`, id 25) and stop it after.
+2. **Phase 2 (D4):** PB1 tested 2026-09-30; PB2's no-prompt paths 2026-09-30 and
+   its five prompt paths 2026-10-01 (above). **2026-10-05: deployed all five**
+   (`./tools/deploy.sh --use-case tehtris_edr`: posture 356 v7, isolate 357 v4 with
+   the two note fixes, unisolate 358, quarantine 359, response 360, all
+   `validation=True`) against the mock restarted on 8446 (its state resets on
+   restart: `ws-finance-01` is no longer isolated, `ws-hr-07` starts isolated).
+   No-prompt paths, container 1380, each with its note (3535-3540):
+
+   | Run | Playbook | Host / input | Output `status` | Run status |
+   |---|---|---|---|---|
+   | 6062 | PB3 | `srv-db-02` | `not_isolated`, nothing sent | success |
+   | 6063 | PB3 | `ws-offline-09` | `not_sent` (504 quoted) | failed* |
+   | 6064 | PB3 | `ghost-host-01` | `not_sent` (not in inventory) | failed* |
+   | 6065 | PB5 | `ws-finance-01`, `C:\Temp\does-not-exist.exe` | `not_found` | success |
+   | 6066 | PB5 | `ws-offline-09` | `not_sent` (504 quoted) | failed* |
+   | 6067 | PB5 | `ghost-host-01` | `not_sent` (not in inventory) | failed* |
+
+   \* The playbook run shows `failed` because its read action failed; the
+   playbook handled it, wrote its note and set its output.
+
+   **Connector v1.2.2 installed 2026-10-05** (app 201, 17 actions, Python 3.13;
+   the package was rebuilt first — the 10-01 tgz carried the pre-commit README,
+   code identical). Through asset 25 via the App Debugger: Test Connectivity
+   passed, `get isolation status ws-hr-07` = isolated (exact match, not
+   `ws-hr-070`), `update tag srv-db-02 DBA_server` (a PUT, its tag written back
+   unchanged) succeeded.
+
+   **Prompt paths, answered by the user in the GUI** (2026-10-05; answering over
+   `POST /rest/approval/<id>/respond`, used for PB2's tests on 2026-10-01, was
+   refused by the auto-mode classifier). Each run's `reason` named the expected
+   answer; an approval maps to its run through `approval.action_run` →
+   `action_run.playbook_run`. Container 1380:
+
+   | Run | Playbook | Host / input | Answer | Output `status` |
+   |---|---|---|---|---|
+   | 6059 | PB4 | `ws-finance-01` | none (30 min) | `expired` — posture `success`, isolation `expired`, nothing sent (note 3551) |
+   | 6089 | PB4 | `ws-finance-01` | Isolate host | `isolated`, verified; tags `FIN_workstation` → `FIN_workstation,soar-isolated` |
+   | 6090 | PB3 | `ws-hr-07` | Do not release | `declined`, nothing sent |
+   | 6091 | PB5 | `ws-finance-01`, `powershell.exe`, with `notification` | Quarantine file | `quarantined`; the POST carried `notification`; `quarantine_paths` = the `.qtn` path for a console restore |
+   | 6093 | PB5 | same file | Do not quarantine | `declined`, no POST sent |
+   | 6098 | PB3 | `ws-finance-01` (isolated by 6089) | Release host | `released`, verified; tags → `FIN_workstation,soar-released` (P2 swap) |
+
+   With PB2's 2026-10-01 table, every designed path of PB1-PB5 has run against
+   the mock; `queued` and `applied_not_confirmed` cannot be produced there (no
+   `persist`, immediate read-back). Custom list `tehtris_edr_settings` created
+   (id 6). Until D2b, test
+   against the mock hand-run on port 8446 (asset `tehtris_mock_8446`, id 25) and
+   stop it after — port 8446 is also UC2's mock SMTP port, so the two cannot run
+   at once.
 3. **Once D2b is done:** switch the playbooks' action blocks from
    `tehtris_mock_8446` to `tehtris_mock`, redeploy, delete asset 25. Test
    Connectivity and all 17 actions already passed on soar8 through asset 25
    (2026-09-30), so D3 is closed apart from that switch.
-4. **Ask the airgapped team** (one host is enough): the `tags` string
+4. **Partial handover exported 2026-09-30 (user decision): connector v1.2.1 + PB1
+   only**, `dist/handover/tehtris_edr-2026-09-30`, mirrored to **`cyberkara/soar-uc16-handover`
+   (PRIVATE, `main`, `769e8d8`)** the same day.
+   `export_handover.py` has a `tehtris_edr` entry whose new `playbooks` key ships a
+   subset of the use case; add PB2 (its prompt paths passed 2026-10-01) and PB3-PB5
+   once they pass, plus `tehtris_edr_settings` as an `operator_config` list, and
+   connector v1.2.2. The package asks the team to report the points below.
+5. **Ask the airgapped team** (one host is enough): the `tags` string
    `get host detail` returns for a host with two tags (gives the separator and
    the trigram), whether offline hosts need `persist`, and whether `power: hard`
    is ever wanted.
-5. **Carry the reconciliation debt forward:** events response fields, netstat and
+6. **Carry the reconciliation debt forward:** events response fields, netstat and
    software columns, the tag separator, and how soon `get isolation status`
    reflects an isolate need a real Tehtris tenant. UC16 cannot be called
    validated until then.

@@ -1,0 +1,296 @@
+{
+    "blockly": false,
+    "blockly_xml": "<xml></xml>",
+    "category": "Endpoint",
+    "coa": {
+        "data": {
+            "hash": "",
+            "edges": [
+                {
+                    "id": "port_0_to_port_2",
+                    "sourceNode": "0",
+                    "sourcePort": "0_out",
+                    "targetNode": "2",
+                    "targetPort": "2_in"
+                },
+                {
+                    "id": "port_2_to_port_3",
+                    "sourceNode": "2",
+                    "sourcePort": "2_out",
+                    "targetNode": "3",
+                    "targetPort": "3_in"
+                },
+                {
+                    "id": "port_3_to_port_4",
+                    "sourceNode": "3",
+                    "sourcePort": "3_out",
+                    "targetNode": "4",
+                    "targetPort": "4_in"
+                },
+                {
+                    "id": "port_4_to_port_5",
+                    "sourceNode": "4",
+                    "sourcePort": "4_out",
+                    "targetNode": "5",
+                    "targetPort": "5_in"
+                },
+                {
+                    "id": "port_5_to_port_1",
+                    "sourceNode": "5",
+                    "sourcePort": "5_out",
+                    "targetNode": "1",
+                    "targetPort": "1_in"
+                }
+            ],
+            "nodes": {
+                "0": {
+                    "x": 190,
+                    "y": -6.394884621840902e-14,
+                    "id": "0",
+                    "data": {
+                        "id": "0",
+                        "type": "start",
+                        "advanced": {
+                            "join": []
+                        },
+                        "functionName": "on_start"
+                    },
+                    "type": "start",
+                    "errors": {},
+                    "warnings": {}
+                },
+                "1": {
+                    "x": 190,
+                    "y": 750,
+                    "id": "1",
+                    "data": {
+                        "id": "1",
+                        "type": "end",
+                        "advanced": {
+                            "join": []
+                        },
+                        "functionId": 5,
+                        "functionName": "on_finish"
+                    },
+                    "type": "end",
+                    "errors": {},
+                    "userCode": "    ################################################################################\n    ################################################################################\n    ################################################################################\n\n    # Populate the generated `output` dict; the save after Custom Code End emits it.\n    # No block recorded an outcome (the run stopped early): report error.\n    raw_output = phantom.get_run_data(key=\"playbook_output\")\n    if raw_output:\n        output.update(json.loads(raw_output))\n    # The 8.6 VPE initialises every output above to [] (8.5 wrote None), so an\n    # output no block set is normalised to null here, whichever form a save wrote.\n    for key, value in output.items():\n        if value == []:\n            output[key] = None\n    if output[\"status\"] is None:\n        output[\"status\"] = \"error\"\n\n    ################################################################################\n    ################################################################################\n    ################################################################################\n",
+                    "warnings": {}
+                },
+                "2": {
+                    "x": 190,
+                    "y": 150,
+                    "id": "2",
+                    "data": {
+                        "id": "2",
+                        "type": "code",
+                        "advanced": {
+                            "join": [],
+                            "customName": "check inputs",
+                            "description": "Check the hostname input; read the optional reason and lookback.",
+                            "customNameId": 0
+                        },
+                        "functionId": 1,
+                        "functionName": "check_inputs",
+                        "inputParameters": [
+                            "playbook_input:hostname",
+                            "playbook_input:reason",
+                            "playbook_input:lookback_minutes"
+                        ],
+                        "outputVariables": [
+                            "hostname",
+                            "reason",
+                            "lookback_minutes"
+                        ]
+                    },
+                    "type": "code",
+                    "errors": {},
+                    "userCode": "    ################################################################################\n    ################################################################################\n    ################################################################################\n\n    # Read again here so this block does not depend on the generated variable names.\n    values = {}\n    for name in (\"hostname\", \"reason\", \"lookback_minutes\"):\n        rows = phantom.collect2(container=container, datapath=[\"playbook_input:\" + name])\n        values[name] = str(_first(rows) or \"\").strip()\n\n    if not values[\"hostname\"]:\n        problem = \"No hostname was given. Run the playbook again with the endpoint's hostname as Tehtris shows it.\"\n        phantom.error(problem)\n        phantom.add_note(\n            container=container,\n            note_type=\"general\",\n            title=\"Tehtris Response - Error\",\n            content=problem,\n            note_format=\"markdown\",  # the content is markdown; add_note() defaults to html\n        )\n        phantom.save_run_data(key=\"playbook_output\", value=json.dumps({\"status\": \"error\", \"message\": problem}))\n        return\n\n    check_inputs__hostname = values[\"hostname\"]\n    check_inputs__reason = values[\"reason\"]\n    # Blank = tehtris_host_posture's own default lookback.\n    check_inputs__lookback_minutes = values[\"lookback_minutes\"] or None\n\n    phantom.save_run_data(key=\"check_inputs:hostname\", value=json.dumps(check_inputs__hostname))\n    phantom.save_run_data(key=\"check_inputs:reason\", value=json.dumps(check_inputs__reason))\n    phantom.save_run_data(key=\"check_inputs:lookback_minutes\", value=json.dumps(check_inputs__lookback_minutes))\n\n    ################################################################################\n    ################################################################################\n    ################################################################################\n",
+                    "warnings": {}
+                },
+                "3": {
+                    "x": 190,
+                    "y": 300,
+                    "id": "3",
+                    "data": {
+                        "id": "3",
+                        "type": "playbook",
+                        "inputs": {
+                            "hostname": {
+                                "datapaths": [
+                                    "check_inputs:custom_function:hostname"
+                                ],
+                                "deduplicate": false
+                            },
+                            "lookback_minutes": {
+                                "datapaths": [
+                                    "check_inputs:custom_function:lookback_minutes"
+                                ],
+                                "deduplicate": false
+                            }
+                        },
+                        "advanced": {
+                            "join": [],
+                            "customName": "run posture",
+                            "description": "Posture of the host: tehtris_host_posture writes its own note.",
+                            "customNameId": 0
+                        },
+                        "functionId": 2,
+                        "synchronous": true,
+                        "functionName": "run_posture",
+                        "playbookName": "tehtris_host_posture",
+                        "playbookRepo": 1,
+                        "playbookType": "data",
+                        "playbookRepoName": "local"
+                    },
+                    "type": "playbook",
+                    "errors": {},
+                    "warnings": {}
+                },
+                "4": {
+                    "x": 190,
+                    "y": 450,
+                    "id": "4",
+                    "data": {
+                        "id": "4",
+                        "type": "playbook",
+                        "inputs": {
+                            "reason": {
+                                "datapaths": [
+                                    "check_inputs:custom_function:reason"
+                                ],
+                                "deduplicate": false
+                            },
+                            "hostname": {
+                                "datapaths": [
+                                    "check_inputs:custom_function:hostname"
+                                ],
+                                "deduplicate": false
+                            },
+                            "posture_summary": {
+                                "datapaths": [
+                                    "run_posture:playbook_output:summary"
+                                ],
+                                "deduplicate": false
+                            }
+                        },
+                        "advanced": {
+                            "join": [],
+                            "customName": "run isolate",
+                            "description": "Isolation behind its analyst prompt: tehtris_host_isolate, with the posture summary.",
+                            "customNameId": 0
+                        },
+                        "functionId": 3,
+                        "synchronous": true,
+                        "functionName": "run_isolate",
+                        "playbookName": "tehtris_host_isolate",
+                        "playbookRepo": 1,
+                        "playbookType": "data",
+                        "playbookRepoName": "local"
+                    },
+                    "type": "playbook",
+                    "errors": {},
+                    "warnings": {}
+                },
+                "5": {
+                    "x": 190,
+                    "y": 600,
+                    "id": "5",
+                    "data": {
+                        "id": "5",
+                        "type": "code",
+                        "advanced": {
+                            "join": [],
+                            "customName": "report outcome",
+                            "description": "Return both children's outcomes as this playbook's outputs.",
+                            "customNameId": 0
+                        },
+                        "functionId": 4,
+                        "functionName": "report_outcome",
+                        "inputParameters": [
+                            "run_posture:playbook_output:status",
+                            "run_isolate:playbook_output:status",
+                            "run_isolate:playbook_output:message"
+                        ],
+                        "outputVariables": []
+                    },
+                    "type": "code",
+                    "errors": {},
+                    "userCode": "    ################################################################################\n    ################################################################################\n    ################################################################################\n\n    def child_output(block, field):\n        return _first(phantom.collect2(container=container, datapath=[\"{}:playbook_output:{}\".format(block, field)]))\n\n    posture_status = child_output(\"run_posture\", \"status\")\n    isolation_status = child_output(\"run_isolate\", \"status\")\n    message = child_output(\"run_isolate\", \"message\")\n    phantom.save_run_data(key=\"playbook_output\", value=json.dumps({\n        # The isolation outcome is the response's outcome; the posture one is kept beside it.\n        \"status\": isolation_status or \"error\",\n        \"posture_status\": posture_status,\n        \"isolation_status\": isolation_status,\n        \"message\": message or \"tehtris_host_isolate returned no outcome; see its playbook run.\",\n    }))\n\n    ################################################################################\n    ################################################################################\n    ################################################################################\n",
+                    "warnings": {}
+                }
+            },
+            "notes": "",
+            "description": "Data playbook (UC16 PB4) run by an analyst on any container. One entry point for a Tehtris EDR response on a host: runs tehtris_host_posture, then tehtris_host_isolate with the posture summary shown in its approval prompt. Each child writes its own note; this playbook returns both outcomes.",
+            "globalCustomCode": "################################################################################\n################################################################################\n\n# Design notes (kept here because a VPE save replaces the module docstring):\n# UC16 PB4 -- see docs/usecases/uc16_tehtris_edr_implementation_plan.md.\n# Adds no capability, only convenience: the children do every check, prompt\n# and note themselves. Both playbook blocks are synchronous, so the isolation\n# prompt (PB2) is raised only after the posture note (PB1) is written, and the\n# posture summary reaches the prompt. An unknown host stops in PB2's pre-check\n# (\"nothing sent\"), so no separate gate is needed here.\n\n\ndef _first(rows, index=0):\n    \"\"\"Value `index` of the first collect2 row, or None.\"\"\"\n    if rows and len(rows[0]) > index:\n        return rows[0][index]\n    return None\n################################################################################\n################################################################################\n"
+        },
+        "input_spec": [
+            {
+                "name": "hostname",
+                "contains": [
+                    "host name"
+                ],
+                "description": "Required. The endpoint's hostname as Tehtris EDR shows it (exact match, case-insensitive)."
+            },
+            {
+                "name": "reason",
+                "contains": [],
+                "description": "Optional. Why the host should be isolated; shown in the prompt and the note."
+            },
+            {
+                "name": "lookback_minutes",
+                "contains": [],
+                "description": "Optional. Minutes back from now for the posture's processes and events; blank = tehtris_host_posture's default (60)."
+            }
+        ],
+        "output_spec": [
+            {
+                "name": "status",
+                "contains": [],
+                "metadata": {},
+                "datapaths": [],
+                "deduplicate": false,
+                "description": "tehtris_host_isolate's status (isolated, declined, not_sent, ...), or error."
+            },
+            {
+                "name": "posture_status",
+                "contains": [],
+                "metadata": {},
+                "datapaths": [],
+                "deduplicate": false,
+                "description": "tehtris_host_posture's status (success, partial, not_found, or error)."
+            },
+            {
+                "name": "isolation_status",
+                "contains": [],
+                "metadata": {},
+                "datapaths": [],
+                "deduplicate": false,
+                "description": "tehtris_host_isolate's status."
+            },
+            {
+                "name": "message",
+                "contains": [],
+                "metadata": {},
+                "datapaths": [],
+                "deduplicate": false,
+                "description": "tehtris_host_isolate's one-line outcome."
+            }
+        ],
+        "playbook_type": "data",
+        "python_version": "3.13",
+        "schema": "5.0.24",
+        "version": "8.6.0.530",
+        "playbook_trigger": "artifact_created"
+    },
+    "create_time": "2026-10-05T19:00:09.709059Z",
+    "draft_mode": false,
+    "labels": [
+        "*"
+    ],
+    "tags": [
+        "tehtris_edr",
+        "uc16",
+        "isolation"
+    ]
+}

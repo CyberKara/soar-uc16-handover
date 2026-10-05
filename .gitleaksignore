@@ -3,11 +3,19 @@
 # Every playbook JSON the SOAR 8.6 VPE writes carries a
 # "comparisonKey": "comparison_key_<uuid-or-0>" identifier on each decision
 # comparison and action-loop condition. gitleaks generic-api-key matches the
-# key name. Checked 2026-09-30: all entries below are such ids.
+# key name. Checked 2026-09-30 and 2026-10-05: all entries below are such ids.
 #
 # Fingerprints are LINE-PINNED: re-scan with this file moved aside and repin
 # on every refresh of this mirror.
 
+playbooks/source/tehtris_file_quarantine/tehtris_file_quarantine.json:generic-api-key:153
+playbooks/source/tehtris_file_quarantine/tehtris_file_quarantine.json:generic-api-key:278
+playbooks/source/tehtris_file_quarantine/tehtris_file_quarantine.json:generic-api-key:350
+playbooks/source/tehtris_host_isolate/tehtris_host_isolate.json:generic-api-key:172
+playbooks/source/tehtris_host_isolate/tehtris_host_isolate.json:generic-api-key:290
+playbooks/source/tehtris_host_isolate/tehtris_host_isolate.json:generic-api-key:355
+playbooks/source/tehtris_host_isolate/tehtris_host_isolate.json:generic-api-key:420
+playbooks/source/tehtris_host_isolate/tehtris_host_isolate.json:generic-api-key:515
 playbooks/source/tehtris_host_posture/tehtris_host_posture.json:generic-api-key:205
 playbooks/source/tehtris_host_posture/tehtris_host_posture.json:generic-api-key:305
 playbooks/source/tehtris_host_posture/tehtris_host_posture.json:generic-api-key:322
@@ -17,3 +25,8 @@ playbooks/source/tehtris_host_posture/tehtris_host_posture.json:generic-api-key:
 playbooks/source/tehtris_host_posture/tehtris_host_posture.json:generic-api-key:553
 playbooks/source/tehtris_host_posture/tehtris_host_posture.json:generic-api-key:618
 playbooks/source/tehtris_host_posture/tehtris_host_posture.json:generic-api-key:683
+playbooks/source/tehtris_host_unisolate/tehtris_host_unisolate.json:generic-api-key:170
+playbooks/source/tehtris_host_unisolate/tehtris_host_unisolate.json:generic-api-key:288
+playbooks/source/tehtris_host_unisolate/tehtris_host_unisolate.json:generic-api-key:353
+playbooks/source/tehtris_host_unisolate/tehtris_host_unisolate.json:generic-api-key:418
+playbooks/source/tehtris_host_unisolate/tehtris_host_unisolate.json:generic-api-key:513
