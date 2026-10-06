@@ -1,5 +1,5 @@
 {
-  "name": "tehtris_mock_8446",
+  "name": "tehtris_mock",
   "app_name": "Tehtris EDR",
   "configuration": {
     "api_key": "<<SET ME \u2014 see HANDOVER.md, re-enter from your vault/CMDB>>",

@@ -421,7 +421,7 @@ def get_host_detail(action=None, success=None, container=None, results=None, han
     ## Custom Code End
     ################################################################################
 
-    phantom.act("get host detail", parameters=parameters, name="get_host_detail", assets=["tehtris_mock_8446"], callback=check_host)
+    phantom.act("get host detail", parameters=parameters, name="get_host_detail", assets=["tehtris_mock"], callback=check_host)
 
     return
 
@@ -543,7 +543,7 @@ def get_isolation_status(action=None, success=None, container=None, results=None
     ## Custom Code End
     ################################################################################
 
-    phantom.act("get isolation status", parameters=parameters, name="get_isolation_status", assets=["tehtris_mock_8446"], callback=get_system_info)
+    phantom.act("get isolation status", parameters=parameters, name="get_isolation_status", assets=["tehtris_mock"], callback=get_system_info)
 
     return
 
@@ -579,7 +579,7 @@ def get_system_info(action=None, success=None, container=None, results=None, han
     ## Custom Code End
     ################################################################################
 
-    phantom.act("get system info", parameters=parameters, name="get_system_info", assets=["tehtris_mock_8446"], callback=get_processes)
+    phantom.act("get system info", parameters=parameters, name="get_system_info", assets=["tehtris_mock"], callback=get_processes)
 
     return
 
@@ -619,7 +619,7 @@ def get_processes(action=None, success=None, container=None, results=None, handl
     ## Custom Code End
     ################################################################################
 
-    phantom.act("get processes", parameters=parameters, name="get_processes", assets=["tehtris_mock_8446"], callback=get_network_info)
+    phantom.act("get processes", parameters=parameters, name="get_processes", assets=["tehtris_mock"], callback=get_network_info)
 
     return
 
@@ -655,7 +655,7 @@ def get_network_info(action=None, success=None, container=None, results=None, ha
     ## Custom Code End
     ################################################################################
 
-    phantom.act("get network info", parameters=parameters, name="get_network_info", assets=["tehtris_mock_8446"], callback=list_software)
+    phantom.act("get network info", parameters=parameters, name="get_network_info", assets=["tehtris_mock"], callback=list_software)
 
     return
 
@@ -691,7 +691,7 @@ def list_software(action=None, success=None, container=None, results=None, handl
     ## Custom Code End
     ################################################################################
 
-    phantom.act("list software", parameters=parameters, name="list_software", assets=["tehtris_mock_8446"], callback=get_recent_events)
+    phantom.act("list software", parameters=parameters, name="list_software", assets=["tehtris_mock"], callback=get_recent_events)
 
     return
 
@@ -729,7 +729,7 @@ def get_recent_events(action=None, success=None, container=None, results=None, h
     ## Custom Code End
     ################################################################################
 
-    phantom.act("get events", parameters=parameters, name="get_recent_events", assets=["tehtris_mock_8446"], callback=note_posture)
+    phantom.act("get events", parameters=parameters, name="get_recent_events", assets=["tehtris_mock"], callback=note_posture)
 
     return
 

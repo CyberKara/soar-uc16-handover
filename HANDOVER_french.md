@@ -1,6 +1,6 @@
 # UC16 — Tehtris EDR (connector + 5 playbooks) — Paquet de transfert (déploiement air-gapped)
 
-Généré le 2026-10-05 20:11 UTC à partir de `tehtris_edr` (environnement source : `soar8`).
+Généré le 2026-10-05 23:59 UTC à partir de `tehtris_edr` (environnement source : `soar8`).
 
 Ce paquet est autonome — tout ce qu'il faut pour déployer ce cas d'usage manuellement
 dans un environnement sans accès réseau vers ce dépôt ni vers `soar8`.
@@ -25,7 +25,7 @@ Ne concerne que le cas où cette application est déjà installée sur la cible
 depuis un paquet précédent. Sur une cible vierge, passez à l'ordre
 d'installation.
 
-- **Depuis le premier paquet (connecteur v1.2.1 + `tehtris_host_posture` seul) :** installez le connecteur v1.2.2 par-dessus l'app Tehtris EDR existante, une mise à jour en place normale ; l'asset et sa clé d'API restent tels quels. La v1.2.2 ajoute le champ d'asset facultatif `timeout` (secondes par appel d'API, 1 à 300 ; vide = 30, l'ancienne valeur fixe) et relance une lecture ou une écriture de tag jusqu'à trois fois quand Tehtris répond 429, 500, 502 ou 503 ; une demande d'isolement, de levée d'isolement ou de quarantaine n'est jamais envoyée deux fois. `tehtris_host_posture` est inchangé : gardez-le, importez les quatre nouveaux playbooks et créez la liste personnalisée `tehtris_edr_settings`.
+- **Depuis le premier paquet (connecteur v1.2.1 + `tehtris_host_posture` seul) :** installez le connecteur v1.2.2 par-dessus l'app Tehtris EDR existante, une mise à jour en place normale ; l'asset et sa clé d'API restent tels quels. La v1.2.2 ajoute le champ d'asset facultatif `timeout` (secondes par appel d'API, 1 à 300 ; vide = 30, l'ancienne valeur fixe) et relance une lecture ou une écriture de tag jusqu'à trois fois quand Tehtris répond 429, 500, 502 ou 503 ; une demande d'isolement, de levée d'isolement ou de quarantaine n'est jamais envoyée deux fois. `tehtris_host_posture` est inchangé : gardez-le, importez les quatre nouveaux playbooks et créez la liste personnalisée `tehtris_edr_settings`. Les nouveaux playbooks désignent l'asset `tehtris_mock` (le premier paquet disait `tehtris_mock_8446`) : rattachez leurs blocs d'action à votre asset Tehtris dans le VPE et enregistrez, comme pour le premier paquet.
 
 ## Ordre d'installation
 
@@ -59,7 +59,7 @@ d'installation.
 
    | Nom de l'asset | Application | Utilisé par | Modèle |
    |---|---|---|---|
-   | `tehtris_mock_8446` | Tehtris EDR | `tehtris_file_quarantine`, `tehtris_host_isolate`, `tehtris_host_posture`, `tehtris_host_unisolate` | `assets/tehtris_mock_8446.json` |
+   | `tehtris_mock` | Tehtris EDR | `tehtris_file_quarantine`, `tehtris_host_isolate`, `tehtris_host_posture`, `tehtris_host_unisolate` | `assets/tehtris_mock.json` |
 
 3. **Créer la/les liste(s) personnalisée(s)** à partir de `custom_lists/*.json` — chaque
    fichier contient le tableau `content` exact (les lignes définies par ce paquet, jamais les lignes de données de la source) à

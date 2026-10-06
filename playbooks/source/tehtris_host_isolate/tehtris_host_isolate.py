@@ -214,7 +214,7 @@ def pre_check_isolation(action=None, success=None, container=None, results=None,
     ## Custom Code End
     ################################################################################
 
-    phantom.act("get isolation status", parameters=parameters, name="pre_check_isolation", assets=["tehtris_mock_8446"], callback=route_pre_check)
+    phantom.act("get isolation status", parameters=parameters, name="pre_check_isolation", assets=["tehtris_mock"], callback=route_pre_check)
 
     return
 
@@ -433,7 +433,7 @@ def send_for_isolation(action=None, success=None, container=None, results=None, 
     ## Custom Code End
     ################################################################################
 
-    phantom.act("send for isolation", parameters=parameters, name="send_for_isolation", assets=["tehtris_mock_8446"], callback=verify_isolation)
+    phantom.act("send for isolation", parameters=parameters, name="send_for_isolation", assets=["tehtris_mock"], callback=verify_isolation)
 
     return
 
@@ -469,7 +469,7 @@ def verify_isolation(action=None, success=None, container=None, results=None, ha
     ## Custom Code End
     ################################################################################
 
-    phantom.act("get isolation status", parameters=parameters, name="verify_isolation", assets=["tehtris_mock_8446"], callback=read_host_tags)
+    phantom.act("get isolation status", parameters=parameters, name="verify_isolation", assets=["tehtris_mock"], callback=read_host_tags)
 
     return
 
@@ -505,7 +505,7 @@ def read_host_tags(action=None, success=None, container=None, results=None, hand
     ## Custom Code End
     ################################################################################
 
-    phantom.act("get host detail", parameters=parameters, name="read_host_tags", assets=["tehtris_mock_8446"], callback=build_tag)
+    phantom.act("get host detail", parameters=parameters, name="read_host_tags", assets=["tehtris_mock"], callback=build_tag)
 
     return
 
@@ -612,7 +612,7 @@ def tag_isolated(action=None, success=None, container=None, results=None, handle
     ## Custom Code End
     ################################################################################
 
-    phantom.act("update tag", parameters=parameters, name="tag_isolated", assets=["tehtris_mock_8446"], callback=note_result)
+    phantom.act("update tag", parameters=parameters, name="tag_isolated", assets=["tehtris_mock"], callback=note_result)
 
     return
 

@@ -197,7 +197,7 @@
                         "connectorId": "bf34e3e5-c6da-49b0-8dbc-cd4f2e080191",
                         "functionName": "pre_check_isolation",
                         "connectorConfigs": [
-                            "tehtris_mock_8446"
+                            "tehtris_mock"
                         ],
                         "connectorVersion": "v1",
                         "requiredParameters": [
@@ -315,7 +315,7 @@
                         "connectorId": "bf34e3e5-c6da-49b0-8dbc-cd4f2e080191",
                         "functionName": "remove_from_isolation",
                         "connectorConfigs": [
-                            "tehtris_mock_8446"
+                            "tehtris_mock"
                         ],
                         "connectorVersion": "v1",
                         "requiredParameters": [
@@ -380,7 +380,7 @@
                         "connectorId": "bf34e3e5-c6da-49b0-8dbc-cd4f2e080191",
                         "functionName": "verify_isolation",
                         "connectorConfigs": [
-                            "tehtris_mock_8446"
+                            "tehtris_mock"
                         ],
                         "connectorVersion": "v1",
                         "requiredParameters": [
@@ -445,7 +445,7 @@
                         "connectorId": "bf34e3e5-c6da-49b0-8dbc-cd4f2e080191",
                         "functionName": "read_host_tags",
                         "connectorConfigs": [
-                            "tehtris_mock_8446"
+                            "tehtris_mock"
                         ],
                         "connectorVersion": "v1",
                         "requiredParameters": [
@@ -541,7 +541,7 @@
                         "connectorId": "bf34e3e5-c6da-49b0-8dbc-cd4f2e080191",
                         "functionName": "tag_released",
                         "connectorConfigs": [
-                            "tehtris_mock_8446"
+                            "tehtris_mock"
                         ],
                         "connectorVersion": "v1",
                         "requiredParameters": [
@@ -664,7 +664,7 @@
         "version": "8.6.0.530",
         "playbook_trigger": "artifact_created"
     },
-    "create_time": "2026-10-05T19:00:03.099958Z",
+    "create_time": "2026-10-05T23:53:08.325255Z",
     "draft_mode": false,
     "labels": [
         "*"

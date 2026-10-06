@@ -232,7 +232,7 @@
                         "connectorId": "bf34e3e5-c6da-49b0-8dbc-cd4f2e080191",
                         "functionName": "get_host_detail",
                         "connectorConfigs": [
-                            "tehtris_mock_8446"
+                            "tehtris_mock"
                         ],
                         "connectorVersion": "v1",
                         "requiredParameters": [
@@ -383,7 +383,7 @@
                         "connectorId": "bf34e3e5-c6da-49b0-8dbc-cd4f2e080191",
                         "functionName": "get_isolation_status",
                         "connectorConfigs": [
-                            "tehtris_mock_8446"
+                            "tehtris_mock"
                         ],
                         "connectorVersion": "v1",
                         "requiredParameters": [
@@ -448,7 +448,7 @@
                         "connectorId": "bf34e3e5-c6da-49b0-8dbc-cd4f2e080191",
                         "functionName": "get_system_info",
                         "connectorConfigs": [
-                            "tehtris_mock_8446"
+                            "tehtris_mock"
                         ],
                         "connectorVersion": "v1",
                         "requiredParameters": [
@@ -515,7 +515,7 @@
                         "connectorId": "bf34e3e5-c6da-49b0-8dbc-cd4f2e080191",
                         "functionName": "get_processes",
                         "connectorConfigs": [
-                            "tehtris_mock_8446"
+                            "tehtris_mock"
                         ],
                         "connectorVersion": "v1",
                         "requiredParameters": [
@@ -580,7 +580,7 @@
                         "connectorId": "bf34e3e5-c6da-49b0-8dbc-cd4f2e080191",
                         "functionName": "get_network_info",
                         "connectorConfigs": [
-                            "tehtris_mock_8446"
+                            "tehtris_mock"
                         ],
                         "connectorVersion": "v1",
                         "requiredParameters": [
@@ -645,7 +645,7 @@
                         "connectorId": "bf34e3e5-c6da-49b0-8dbc-cd4f2e080191",
                         "functionName": "list_software",
                         "connectorConfigs": [
-                            "tehtris_mock_8446"
+                            "tehtris_mock"
                         ],
                         "connectorVersion": "v1",
                         "requiredParameters": [
@@ -711,7 +711,7 @@
                         "connectorId": "bf34e3e5-c6da-49b0-8dbc-cd4f2e080191",
                         "functionName": "get_recent_events",
                         "connectorConfigs": [
-                            "tehtris_mock_8446"
+                            "tehtris_mock"
                         ],
                         "connectorVersion": "v1",
                         "requiredParameters": [
@@ -891,7 +891,7 @@
         "version": "8.6.0.530",
         "playbook_trigger": "artifact_created"
     },
-    "create_time": "2026-10-05T18:59:56.297037Z",
+    "create_time": "2026-10-05T23:53:01.302068Z",
     "draft_mode": false,
     "labels": [
         "*"

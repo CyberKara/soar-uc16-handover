@@ -181,7 +181,7 @@
                         "connectorId": "bf34e3e5-c6da-49b0-8dbc-cd4f2e080191",
                         "functionName": "get_file_info",
                         "connectorConfigs": [
-                            "tehtris_mock_8446"
+                            "tehtris_mock"
                         ],
                         "connectorVersion": "v1",
                         "requiredParameters": [
@@ -307,7 +307,7 @@
                         "connectorId": "bf34e3e5-c6da-49b0-8dbc-cd4f2e080191",
                         "functionName": "quarantine_file",
                         "connectorConfigs": [
-                            "tehtris_mock_8446"
+                            "tehtris_mock"
                         ],
                         "connectorVersion": "v1",
                         "requiredParameters": [
@@ -377,7 +377,7 @@
                         "connectorId": "bf34e3e5-c6da-49b0-8dbc-cd4f2e080191",
                         "functionName": "list_quarantined",
                         "connectorConfigs": [
-                            "tehtris_mock_8446"
+                            "tehtris_mock"
                         ],
                         "connectorVersion": "v1",
                         "requiredParameters": [
@@ -519,7 +519,7 @@
         "version": "8.6.0.530",
         "playbook_trigger": "artifact_created"
     },
-    "create_time": "2026-10-05T19:00:06.697170Z",
+    "create_time": "2026-10-05T23:53:11.727072Z",
     "draft_mode": false,
     "labels": [
         "*"

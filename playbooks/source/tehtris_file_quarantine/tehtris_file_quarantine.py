@@ -204,7 +204,7 @@ def get_file_info(action=None, success=None, container=None, results=None, handl
     ## Custom Code End
     ################################################################################
 
-    phantom.act("get file info", parameters=parameters, name="get_file_info", assets=["tehtris_mock_8446"], callback=route_file_info)
+    phantom.act("get file info", parameters=parameters, name="get_file_info", assets=["tehtris_mock"], callback=route_file_info)
 
     return
 
@@ -439,7 +439,7 @@ def quarantine_file(action=None, success=None, container=None, results=None, han
     ## Custom Code End
     ################################################################################
 
-    phantom.act("quarantine file", parameters=parameters, name="quarantine_file", assets=["tehtris_mock_8446"], callback=list_quarantined)
+    phantom.act("quarantine file", parameters=parameters, name="quarantine_file", assets=["tehtris_mock"], callback=list_quarantined)
 
     return
 
@@ -475,7 +475,7 @@ def list_quarantined(action=None, success=None, container=None, results=None, ha
     ## Custom Code End
     ################################################################################
 
-    phantom.act("list quarantined files", parameters=parameters, name="list_quarantined", assets=["tehtris_mock_8446"], callback=note_result)
+    phantom.act("list quarantined files", parameters=parameters, name="list_quarantined", assets=["tehtris_mock"], callback=note_result)
 
     return
 

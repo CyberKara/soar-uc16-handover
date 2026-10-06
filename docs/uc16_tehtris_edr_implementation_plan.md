@@ -8,9 +8,9 @@
 > answered by the user in the GUI: PB4 expiry (6059) and end to end (6089),
 > PB3 decline (6090) and release with the tag swap (6098), PB5 quarantine
 > (6091) and decline (6093) — container 1380. v1.2.2 passed Test Connectivity,
-> a read and a PUT write through asset 25. Still open: D2b, the handover
-> refresh (user: once all paths passed — now), the airgapped team's questions
-> and the real-tenant checks. Detail: "Next step".
+> a read and a PUT write through asset 25. Handover refreshed the same day
+> (public mirror at `d18b436`, release `tehtris-v1.2.2`). D2b done the same day (asset `tehtris_mock`, :8448).
+> Still open: the airgapped team's questions and the real-tenant checks. Detail: "Next step".
 >
 > **2026-10-01 — all five playbooks built; only PB1/PB2 deployed and tested.**
 > PB2's five prompt paths passed live (below). PB3 release, PB4 orchestrator and
@@ -345,8 +345,8 @@ visible, and mirrored in `/data/splunk/docs/next-steps.md`.
 |---|---|---|---|
 | D1 | Fork + extend the connector | `soar-connectors` project | **CODE DONE 2026-09-08.** `connectors/tehtris/` v1.1.0, appid `bf34e3e5-…`, display name *Tehtris EDR*: upstream's 7 actions + the 5 new read-only ones, 3 upstream bugs fixed, README with provenance, FR-01 exemption recorded. Manifest↔connector cross-checked (every action has a handler and a routing entry; no orphans; all params echoed; `versions: EQ(*)` everywhere). **NOT packaged, NOT installed, NOT runtime-tested** — needs `phenv compile_app -t` + `tools/install_app.sh`, which needs D2 first to have anything to talk to. |
 | D2 | `mock_tehtris.py` | Splunk project | **REBUILT 2026-09-29 against the vendor OpenAPI reference** (substring inventory search, 204/202/201 replies, 422 validation, a duplicate hostname, an offline agent → 504, a local-proxy host → 409, Linux systemInfo → 501). First built **2026-09-08:** 596 lines on port **8448**, wired into `mock_start.sh` (`./mock_start.sh tehtris`) and the mock-backend README. All 10 endpoints exercised by curl: auth (missing header, wrong username), the `/api`-prefix 404 guard, events-as-array, inventory hit *and* empty-array miss, isolation read/write/verify/bad-action, systemInfo, processes with `username`/`sha256`/`limit` filters, process tree, network, tag PUT, policy POST. Isolation state is mutable, so pre-check → isolate → verify is testable end to end. |
-| D2b | `mock-tehtris.service` + firewall exposure | **Ansible project** | **NOT DONE — now the ONLY blocker for D3 (2026-09-29).** Measured from soar8: 8443 connects, **8448 is refused** (`curl` rc 7 / `No route to host`); the controller's firewalld has rich rules admitting soar8 on 8443/8446/8447 only. Needs a matching 8448 rule. **Not yet filed in `/data/ansible/docs/next-steps.md`** (checked 2026-09-29) — this row was the only record. The other persistent mocks (8443, 8447) run as systemd units under `/etc/systemd/system/`, not via `mock_start.sh` — so without a unit the Tehtris mock only exists while someone runs it by hand. soar8 must also be able to reach port 8448 on the ansible host. Unit file should mirror `mock-efficientip-ddi.service` exactly (User/Group `klab`, WorkingDirectory the mock-backend dir, `--cert-dir …/certs`, `Restart=on-failure`). Creating it is an OS-layer change and therefore **not this project's to make**. |
-| D3 | Package + install app on soar8, create asset, `test connectivity` green | Splunk project | **MOSTLY DONE 2026-09-29, last leg blocked on D2b.** Local: `connectors/tehtris/tests/` drives **all 12** actions over HTTP against the mock (38 tests green) and found 3 more upstream defects plus one mock-shape error, all fixed (connector README, "Fixes to upstream behaviour"). Later that day, after the vendor reference: **v1.2.0**, 67 tests green — **not yet packaged or installed; soar8's app 201 is still v1.1.0**, which has the wrong-host bug. soar8: `tools/build.sh` + `tools/install_app.sh` → **app 201**, `GET /rest/app_action?_filter_app=201` = 12; asset **`tehtris_mock`** (id 24, `base_url` `https://<ansible-host>:8448/api`, mock key, verify off). Test Connectivity through `/rest/debug_action/201` (the App Debugger path): the app loads and runs on Python 3.13.11 (asset + app config validated, state file created), then fails `[Errno 113] No route to host` — the firewall, not the connector. **To close:** install v1.2.0 (`tools/build.sh` + `tools/install_app.sh`); once 8448 is admitted, re-run Test Connectivity and the 12 actions on soar8 (needs a container for everything but `test connectivity`). **Update 2026-09-30: v1.2.1 installed in place** (app 201, 17 actions, asset 24 still bound; Test Connectivity loads it on Python 3.13.11, then `No route to host`). **Test Connectivity and all 17 actions PASS on soar8 2026-09-30** through asset `tehtris_mock_8446` (id 25; the mock hand-run on the already-admitted port 8446, user decision) — incl. v1.2.1's unknown host as zero hosts and a quarantine → list → restore round trip. Left: point the playbooks at `tehtris_mock` once D2b is done. |
+| D2b | `mock-tehtris.service` + firewall exposure | **Ansible project** | **DONE 2026-10-05 (ansible #180, `6b2f9ba`).** soar8-only rich rule for 8448 on the controller; `mock-tehtris.service` (splunk-owned, a copy of `mock-efficientip-ddi.service`) enabled and running on :8448; Test Connectivity + a live read through asset `tehtris_mock` (id 24) pass. Before: **NOT DONE — now the ONLY blocker for D3 (2026-09-29).** Measured from soar8: 8443 connects, **8448 is refused** (`curl` rc 7 / `No route to host`); the controller's firewalld has rich rules admitting soar8 on 8443/8446/8447 only. Needs a matching 8448 rule. **Not yet filed in `/data/ansible/docs/next-steps.md`** (checked 2026-09-29) — this row was the only record. The other persistent mocks (8443, 8447) run as systemd units under `/etc/systemd/system/`, not via `mock_start.sh` — so without a unit the Tehtris mock only exists while someone runs it by hand. soar8 must also be able to reach port 8448 on the ansible host. Unit file should mirror `mock-efficientip-ddi.service` exactly (User/Group `klab`, WorkingDirectory the mock-backend dir, `--cert-dir …/certs`, `Restart=on-failure`). Creating it is an OS-layer change and therefore **not this project's to make**. |
+| D3 | Package + install app on soar8, create asset, `test connectivity` green | Splunk project | **DONE 2026-10-05** (asset `tehtris_mock` green once D2b landed). Before: **MOSTLY DONE 2026-09-29, last leg blocked on D2b.** Local: `connectors/tehtris/tests/` drives **all 12** actions over HTTP against the mock (38 tests green) and found 3 more upstream defects plus one mock-shape error, all fixed (connector README, "Fixes to upstream behaviour"). Later that day, after the vendor reference: **v1.2.0**, 67 tests green — **not yet packaged or installed; soar8's app 201 is still v1.1.0**, which has the wrong-host bug. soar8: `tools/build.sh` + `tools/install_app.sh` → **app 201**, `GET /rest/app_action?_filter_app=201` = 12; asset **`tehtris_mock`** (id 24, `base_url` `https://<ansible-host>:8448/api`, mock key, verify off). Test Connectivity through `/rest/debug_action/201` (the App Debugger path): the app loads and runs on Python 3.13.11 (asset + app config validated, state file created), then fails `[Errno 113] No route to host` — the firewall, not the connector. **To close:** install v1.2.0 (`tools/build.sh` + `tools/install_app.sh`); once 8448 is admitted, re-run Test Connectivity and the 12 actions on soar8 (needs a container for everything but `test connectivity`). **Update 2026-09-30: v1.2.1 installed in place** (app 201, 17 actions, asset 24 still bound; Test Connectivity loads it on Python 3.13.11, then `No route to host`). **Test Connectivity and all 17 actions PASS on soar8 2026-09-30** through asset `tehtris_mock_8446` (id 25; the mock hand-run on the already-admitted port 8446, user decision) — incl. v1.2.1's unknown host as zero hosts and a quarantine → list → restore round trip. Left: point the playbooks at `tehtris_mock` once D2b is done. |
 | D4 | UC16 playbooks (this doc) | `/kara-do-uc-create` | Design approved 2026-09-30. Code can be written and deployed now; running any action on soar8 still needs D2b. |
 | D5 | Connector actions for the airgapped-team request | `soar-connectors` project | **CODE DONE 2026-09-29** (connector v1.2.0, repo only — not yet installed; 17 actions, 87 tests green against the rebuilt mock, incl. a stateful quarantine → list → restore round trip and a restore by the original path shown to fail). `get file info` (`fileInfo`), `list software` (`software`), `list quarantined files` / `quarantine file` / `restore file` (`remediation/quarantine` GET/POST/PATCH); `netstat` and `systemInfo` already exist. Shapes and build notes: `/data/splunk/docs/next-steps.md`, entry "UC16 — airgapped-site team request". Mock routes + tests for each. |
 
@@ -853,10 +853,12 @@ blast radius — its own design pass if ever wanted).
 
 **Phase 1 is done (design approved 2026-09-30); all five playbooks and connector
 v1.2.2 are live on soar8 and every designed path passed against the mock
-(2026-10-05). Open: D2b, the handover refresh, the real tenant.**
+(2026-10-05); handover mirror at `d18b436`; D2b done the same day (playbooks on
+asset `tehtris_mock`, :8448). Open: the airgapped team's answers, the real tenant.**
 
-1. **D2b (Ansible project): `mock-tehtris.service` + open port 8448 to soar8.**
-   Until then every action on soar8 fails "No route to host" and the mock is
+1. **D2b — DONE 2026-10-05** (ansible #180): rich rule for 8448 + `mock-tehtris.service`
+   running; soar8 reaches it through asset `tehtris_mock`. Was: **D2b (Ansible project):
+   `mock-tehtris.service` + open port 8448 to soar8.** Until then every action on soar8 fails "No route to host" and the mock is
    hand-run only. Mirror `mock-efficientip-ddi.service`. Still not filed in
    `/data/ansible/docs/next-steps.md` (checked 2026-09-30) — an Ansible session
    has to file and do it.
@@ -909,13 +911,29 @@ v1.2.2 are live on soar8 and every designed path passed against the mock
    against the mock hand-run on port 8446 (asset `tehtris_mock_8446`, id 25) and
    stop it after — port 8446 is also UC2's mock SMTP port, so the two cannot run
    at once.
-3. **Once D2b is done:** switch the playbooks' action blocks from
+3. **Switched 2026-10-05:** the four playbooks' action blocks name `tehtris_mock`
+   (34 references, `.py` + JSON), redeployed as ids 361-365 (`validation=True`);
+   runs 6189-6191 (posture, release not-isolated, quarantine not-found) dispatched
+   through `tehtris_mock` (24). **Left: delete asset 25 `tehtris_mock_8446` (user
+   go).** Was: once D2b is done, switch the playbooks' action blocks from
    `tehtris_mock_8446` to `tehtris_mock`, redeploy, delete asset 25. Test
    Connectivity and all 17 actions already passed on soar8 through asset 25
    (2026-09-30), so D3 is closed apart from that switch.
-4. **Partial handover exported 2026-09-30 (user decision): connector v1.2.1 + PB1
+4. **Full handover exported 2026-10-05 (user: ship once every path passed):**
+   `dist/handover/tehtris_edr-2026-10-05-r3` — connector v1.2.2, PB1-PB5,
+   `tehtris_edr_settings` (`operator_config`, two empty key rows), upgrade note from
+   the first package (PB1 unchanged: only its `create_time` moved), verification
+   steps 3-5 for isolate/release/quarantine. **On the mirror as `d18b436`** (on top
+   of `dd2ff0a`, `.gitleaksignore` repinned to 22 comparisonKey ids); the mirror's
+   release workflow published `tehtris-v1.2.2`. **The mirror is PUBLIC by user
+   decision** (2026-10-05, standards v0.15): GitHub shows it public since its
+   creation (PublicEvent 2026-09-30 19:17Z), so the "PRIVATE" below was wrong. It also carries a
+   foreign commit `dd2ff0a` (release workflow: a push of a new `connectors/*.tgz`
+   publishes a GitHub Release) and an unmerged branch
+   `claude/vigilant-einstein-xmya2q` (`099a7e2`, docs-only cleanup TODO).
+   Before: **partial handover exported 2026-09-30 (user decision): connector v1.2.1 + PB1
    only**, `dist/handover/tehtris_edr-2026-09-30`, mirrored to **`cyberkara/soar-uc16-handover`
-   (PRIVATE, `main`, `769e8d8`)** the same day.
+   (recorded PRIVATE then — it was public; `main`, `769e8d8`)** the same day.
    `export_handover.py` has a `tehtris_edr` entry whose new `playbooks` key ships a
    subset of the use case; add PB2 (its prompt paths passed 2026-10-01) and PB3-PB5
    once they pass, plus `tehtris_edr_settings` as an `operator_config` list, and
