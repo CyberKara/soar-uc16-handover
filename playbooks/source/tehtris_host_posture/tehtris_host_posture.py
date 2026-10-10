@@ -1,5 +1,5 @@
 """
-Data playbook (UC16 PB1) run by an analyst on any container. Reads a host&#39;s security posture from Tehtris EDR -- inventory, isolation state, system info, processes, live connections, installed software and recent events -- and writes it as a Tehtris Posture note. Changes nothing on the host.
+Reads one host&#39;s security posture from Tehtris EDR (inventory, isolation state, system info, processes, live connections, software, recent events) and writes it as a Tehtris Posture note. Changes nothing on the host.
 """
 
 
@@ -13,15 +13,11 @@ from datetime import datetime, timedelta
 ################################################################################
 ################################################################################
 
-# Design notes (kept here because a VPE save replaces the module docstring):
-# UC16 PB1 -- see docs/usecases/uc16_tehtris_edr_implementation_plan.md.
-# Read-only: every action here is an investigate action, so the playbook is
-# safe to run and re-run on any container (label "*"). The hostname input is
-# the check that it belongs; get host detail is the existence check and, since
-# connector v1.2.1, reports an unknown host as a success with total_hosts 0.
-# Live calls (isolation status, system info, netstat, software) need the agent
-# connected -- 504 otherwise -- and system info is Windows-only (501); a failed
-# call becomes "not available" in the note and never fails the playbook.
+# Read-only, so safe to run and re-run on any container. get host detail is
+# the existence check: an unknown host is a success with total_hosts 0. Live
+# calls need the agent connected (504 otherwise) and system info is
+# Windows-only (501); a failed call is "not available" in the note and never
+# fails the playbook.
 
 from datetime import timezone
 
@@ -448,7 +444,7 @@ def check_host(action=None, success=None, container=None, results=None, handle=N
     ################################################################################
     ################################################################################
 
-    # Since connector v1.2.1 an unknown hostname is a success with total_hosts 0;
+    # An unknown hostname is a success with total_hosts 0;
     # a failed status means the lookup itself failed.
     rows = phantom.collect2(container=container, datapath=[
         "get_host_detail:action_result.status",
@@ -591,7 +587,7 @@ def get_processes(action=None, success=None, container=None, results=None, handl
     # phantom.debug('Action: {0} {1}'.format(action['name'], ('SUCCEEDED' if success else 'FAILED')))
 
     ################################################################################
-    # List the processes alive during the lookback window (works with the agent offline).
+    # List the processes alive in the lookback window (works with the agent offline).
     ################################################################################
 
     check_inputs__time_to = json.loads(_ if (_ := phantom.get_run_data(key="check_inputs:time_to")) != "" else "null")  # pylint: disable=used-before-assignment
@@ -739,8 +735,7 @@ def note_posture(action=None, success=None, container=None, results=None, handle
     phantom.debug("note_posture() called")
 
     ################################################################################
-    # Write the Tehtris Posture note, one section per action; a failed call shows 
-    # as not available.
+    # Write the Tehtris Posture note; a failed call shows as not available.
     ################################################################################
 
     get_recent_events_result_data = phantom.collect2(container=container, datapath=["get_recent_events:action_result.status"], action_results=results)
@@ -805,8 +800,7 @@ def note_no_host(action=None, success=None, container=None, results=None, handle
     phantom.debug("note_no_host() called")
 
     ################################################################################
-    # Note why no posture was read: the host is unknown to Tehtris, or the lookup 
-    # failed.
+    # Note why no posture was read: host unknown to Tehtris, or the lookup failed.
     ################################################################################
 
     check_inputs__hostname = json.loads(_ if (_ := phantom.get_run_data(key="check_inputs:hostname")) != "" else "null")  # pylint: disable=used-before-assignment
@@ -883,8 +877,8 @@ def on_finish(container, summary):
     raw_output = phantom.get_run_data(key="playbook_output")
     if raw_output:
         output.update(json.loads(raw_output))
-    # The 8.6 VPE initialises every output above to [] (8.5 wrote None), so an
-    # output no block set is normalised to null here, whichever form a save wrote.
+    # The 8.6 VPE initialises every output above to [], so an output no block
+    # set is normalised to null here, whichever form a save wrote.
     for key, value in output.items():
         if value == []:
             output[key] = None

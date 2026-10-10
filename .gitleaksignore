@@ -1,12 +1,7 @@
-# False positives: VPE comparisonKey node ids, not credentials.
-#
-# Every playbook JSON the SOAR 8.6 VPE writes carries a
-# "comparisonKey": "comparison_key_<uuid-or-0>" identifier on each decision
-# comparison and action-loop condition. gitleaks generic-api-key matches the
-# key name. Checked 2026-09-30 and 2026-10-05: all entries below are such ids.
-#
-# Fingerprints are LINE-PINNED: re-scan with this file moved aside and repin
-# on every refresh of this mirror.
+# False positives: the VPE's own comparisonKey node ids (placeholder 0 or a uuid on
+# each decision comparison and action-loop condition), not credentials.
+# The pins are path- and line-pinned: re-derive them on every refresh by scanning
+# with this file moved aside.
 
 playbooks/source/tehtris_file_quarantine/tehtris_file_quarantine.json:generic-api-key:153
 playbooks/source/tehtris_file_quarantine/tehtris_file_quarantine.json:generic-api-key:278

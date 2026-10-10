@@ -74,7 +74,7 @@
                     },
                     "type": "end",
                     "errors": {},
-                    "userCode": "    ################################################################################\n    ################################################################################\n    ################################################################################\n\n    # Populate the generated `output` dict; the save after Custom Code End emits it.\n    # No block recorded an outcome (the run stopped early): report error.\n    raw_output = phantom.get_run_data(key=\"playbook_output\")\n    if raw_output:\n        output.update(json.loads(raw_output))\n    # The 8.6 VPE initialises every output above to [] (8.5 wrote None), so an\n    # output no block set is normalised to null here, whichever form a save wrote.\n    for key, value in output.items():\n        if value == []:\n            output[key] = None\n    if output[\"status\"] is None:\n        output[\"status\"] = \"error\"\n\n    ################################################################################\n    ################################################################################\n    ################################################################################\n",
+                    "userCode": "    ################################################################################\n    ################################################################################\n    ################################################################################\n\n    # Populate the generated `output` dict; the save after Custom Code End emits it.\n    # No block recorded an outcome (the run stopped early): report error.\n    raw_output = phantom.get_run_data(key=\"playbook_output\")\n    if raw_output:\n        output.update(json.loads(raw_output))\n    # The 8.6 VPE initialises every output above to [], so an output no block\n    # set is normalised to null here, whichever form a save wrote.\n    for key, value in output.items():\n        if value == []:\n            output[key] = None\n    if output[\"status\"] is None:\n        output[\"status\"] = \"error\"\n\n    ################################################################################\n    ################################################################################\n    ################################################################################\n",
                     "warnings": {}
                 },
                 "2": {
@@ -177,7 +177,7 @@
                         "advanced": {
                             "join": [],
                             "customName": "run isolate",
-                            "description": "Isolation behind its analyst prompt: tehtris_host_isolate, with the posture summary.",
+                            "description": "tehtris_host_isolate behind its analyst prompt, with the posture summary.",
                             "customNameId": 0
                         },
                         "functionId": 3,
@@ -221,8 +221,8 @@
                 }
             },
             "notes": "",
-            "description": "Data playbook (UC16 PB4) run by an analyst on any container. One entry point for a Tehtris EDR response on a host: runs tehtris_host_posture, then tehtris_host_isolate with the posture summary shown in its approval prompt. Each child writes its own note; this playbook returns both outcomes.",
-            "globalCustomCode": "################################################################################\n################################################################################\n\n# Design notes (kept here because a VPE save replaces the module docstring):\n# UC16 PB4 -- see docs/usecases/uc16_tehtris_edr_implementation_plan.md.\n# Adds no capability, only convenience: the children do every check, prompt\n# and note themselves. Both playbook blocks are synchronous, so the isolation\n# prompt (PB2) is raised only after the posture note (PB1) is written, and the\n# posture summary reaches the prompt. An unknown host stops in PB2's pre-check\n# (\"nothing sent\"), so no separate gate is needed here.\n\n\ndef _first(rows, index=0):\n    \"\"\"Value `index` of the first collect2 row, or None.\"\"\"\n    if rows and len(rows[0]) > index:\n        return rows[0][index]\n    return None\n################################################################################\n################################################################################\n"
+            "description": "Runs tehtris_host_posture, then tehtris_host_isolate with the posture summary in its approval prompt, and returns both outcomes.",
+            "globalCustomCode": "################################################################################\n################################################################################\n\n# The children do every check, prompt and note themselves. Both playbook\n# blocks are synchronous, so the isolation prompt comes after the posture note\n# and carries its summary; an unknown host stops in the isolation pre-check.\n\n\ndef _first(rows, index=0):\n    \"\"\"Value `index` of the first collect2 row, or None.\"\"\"\n    if rows and len(rows[0]) > index:\n        return rows[0][index]\n    return None\n################################################################################\n################################################################################\n"
         },
         "input_spec": [
             {
@@ -283,7 +283,7 @@
         "version": "8.6.0.530",
         "playbook_trigger": "artifact_created"
     },
-    "create_time": "2026-10-05T19:00:09.709059Z",
+    "create_time": "2026-10-10T21:59:54.371768Z",
     "draft_mode": false,
     "labels": [
         "*"

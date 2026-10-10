@@ -1,5 +1,5 @@
 """
-Data playbook (UC16 PB3) run by an analyst on any container. Releases a host from Tehtris EDR network isolation after an analyst approves it in a prompt: pre-checks the isolation state, releases, verifies, marks the host&#39;s Tehtris tags, and records the outcome in a Tehtris Release note.
+Releases a host from Tehtris EDR isolation after an analyst approves it in a prompt, verifies the release, swaps the host tag to soar-released and writes a Tehtris Release note.
 """
 
 
@@ -13,17 +13,14 @@ from datetime import datetime, timedelta
 ################################################################################
 ################################################################################
 
-# Design notes (kept here because a VPE save replaces the module docstring):
-# UC16 PB3 -- see docs/usecases/uc16_tehtris_edr_implementation_plan.md.
-# Mirror of PB2 tehtris_host_isolate: same gates, opposite direction.
-# Always an analyst prompt before releasing (decision 2), raised from a code
-# block so the approver can fall back from the container owner to
-# soar_local_admin (UC2 PB4/PB5 precedent). Nothing is sent when the pre-check
-# cannot read the isolation state -- agent offline (504), unknown host, or no
-# state in the reply (decision 8): no persist, so nothing runs unseen later.
+# PB2 tehtris_host_isolate in the other direction. The release prompt is
+# raised from a code block so the approver can fall back from the container
+# owner to soar_local_admin.
+# Nothing is sent when the pre-check cannot read the isolation state (agent
+# offline, unknown host, no state): no persist, so nothing runs unseen later.
 # The Tehtris tags are ONE string, at most 64 characters, "<trigram>_...", that
-# update tag replaces whole, so the marker is added by read, append, write back
-# (decision 7); one marker slot, soar-isolated / soar-released (P2).
+# update tag replaces whole: the marker is added by read, append, write back,
+# in one slot (soar-isolated / soar-released).
 
 import re
 
@@ -749,8 +746,8 @@ def on_finish(container, summary):
     raw_output = phantom.get_run_data(key="playbook_output")
     if raw_output:
         output.update(json.loads(raw_output))
-    # The 8.6 VPE initialises every output above to [] (8.5 wrote None), so an
-    # output no block set is normalised to null here, whichever form a save wrote.
+    # The 8.6 VPE initialises every output above to [], so an output no block
+    # set is normalised to null here, whichever form a save wrote.
     for key, value in output.items():
         if value == []:
             output[key] = None

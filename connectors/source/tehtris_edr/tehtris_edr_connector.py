@@ -25,7 +25,7 @@ import time
 import phantom.app as phantom
 
 # Usage of the consts file is recommended
-# from tehtris_consts import *
+# from tehtris_edr_consts import *
 import requests
 from bs4 import BeautifulSoup
 from phantom.action_result import ActionResult
@@ -33,7 +33,7 @@ from phantom.base_connector import BaseConnector
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
-from tehtris_consts import *
+from tehtris_edr_consts import *
 
 
 class RetVal(tuple):

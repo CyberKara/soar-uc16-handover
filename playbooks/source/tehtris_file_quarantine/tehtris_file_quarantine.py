@@ -1,5 +1,5 @@
 """
-Data playbook (UC16 PB5) run by an analyst on any container. Quarantines one file on a host through Tehtris EDR after an analyst approves it in a prompt: reads the file&#39;s details, quarantines it, lists the host&#39;s quarantine, and records the outcome and the quarantine paths in a Tehtris Quarantine note.
+Quarantines one file on a host through Tehtris EDR after an analyst approves it in a prompt, and writes a Tehtris Quarantine note listing the host quarantine paths.
 """
 
 
@@ -13,15 +13,12 @@ from datetime import datetime, timedelta
 ################################################################################
 ################################################################################
 
-# Design notes (kept here because a VPE save replaces the module docstring):
-# UC16 PB5 -- see docs/usecases/uc16_tehtris_edr_implementation_plan.md
-# (decision 9, proposal P4). Quarantine only: a restore is done from the
-# Tehtris console with the quarantine path this playbook's note records
-# ("restore file" takes the path IN quarantine, not the original path).
-# Always an analyst prompt, raised from a code block so the approver can fall
-# back from the container owner to soar_local_admin (UC2 PB4/PB5 precedent).
-# Nothing is sent when the file details cannot be read -- agent offline (504),
-# unknown host -- (decision 8): no persist, so nothing runs unseen later.
+# Quarantine only: a restore is done from the Tehtris console with the
+# quarantine path the note records ("restore file" takes the path IN
+# quarantine, not the original path). The prompt is raised from a code block
+# so the approver can fall back from the container owner to soar_local_admin.
+# Nothing is sent when the file details cannot be read (agent offline, unknown
+# host): no persist, so nothing runs unseen later.
 
 import re
 
@@ -178,7 +175,7 @@ def get_file_info(action=None, success=None, container=None, results=None, handl
     # phantom.debug('Action: {0} {1}'.format(action['name'], ('SUCCEEDED' if success else 'FAILED')))
 
     ################################################################################
-    # Read the file's hashes, version and signatures (live: needs the agent connected).
+    # Read the file's hashes, version and signatures (live: needs the agent online).
     ################################################################################
 
     check_inputs__path = json.loads(_ if (_ := phantom.get_run_data(key="check_inputs:path")) != "" else "null")  # pylint: disable=used-before-assignment
@@ -485,7 +482,7 @@ def note_result(action=None, success=None, container=None, results=None, handle=
     phantom.debug("note_result() called")
 
     ################################################################################
-    # Write the Tehtris Quarantine note: request outcome and the host's quarantine paths.
+    # Write the Tehtris Quarantine note: outcome and the host's quarantine paths.
     ################################################################################
 
     quarantine_file_result_data = phantom.collect2(container=container, datapath=["quarantine_file:action_result.status","quarantine_file:action_result.message","quarantine_file:action_result.summary.applied"], action_results=results)
@@ -634,8 +631,8 @@ def on_finish(container, summary):
     raw_output = phantom.get_run_data(key="playbook_output")
     if raw_output:
         output.update(json.loads(raw_output))
-    # The 8.6 VPE initialises every output above to [] (8.5 wrote None), so an
-    # output no block set is normalised to null here, whichever form a save wrote.
+    # The 8.6 VPE initialises every output above to [], so an output no block
+    # set is normalised to null here, whichever form a save wrote.
     # quarantine_paths is a real list when set, so only the other fields are touched.
     for key, value in output.items():
         if value == [] and key != "quarantine_paths":

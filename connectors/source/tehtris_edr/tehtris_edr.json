@@ -1,7 +1,7 @@
 {
     "appid": "bf34e3e5-c6da-49b0-8dbc-cd4f2e080191",
     "name": "Tehtris EDR",
-    "description": "Tehtris XDR/EDR integration: host isolation, file quarantine and restore, plus read-only endpoint security posture (inventory detail, isolation status, process listing, system information, live network activity, installed software and file details). Local fork of the Splunk-published Tehtris app v1.0.1, extended for UC16.",
+    "description": "Tehtris XDR/EDR: host isolation, file quarantine and restore, and read-only endpoint posture. A fork of the Splunk-published Tehtris app v1.0.1.",
     "type": "network security",
     "product_vendor": "Tehtris",
     "logo": "logo.svg",
@@ -17,10 +17,10 @@
         }
     ],
     "license": "Apache-2.0; portions Copyright (c) Splunk, 2024-2026",
-    "app_version": "1.2.2",
+    "app_version": "1.2.4",
     "utctime_updated": "2026-10-01T00:00:00.000000Z",
     "package_name": "phantom_tehtris",
-    "main_module": "tehtris_connector.py",
+    "main_module": "tehtris_edr_connector.py",
     "min_phantom_version": "6.3.0",
     "app_wizard_version": "1.0.0",
     "configuration": {
@@ -411,7 +411,7 @@
             "action": "send for isolation",
             "identifier": "send_for_isolation",
             "description": "Send a host to the isolation module",
-            "verbose": "The hostname must match an enrolled endpoint exactly (Tehtris' inventory search matches substrings, so only an exact, case-insensitive match is used). When several endpoints share the hostname (for example a re-installed agent) the action is refused and lists their uuids. <b>summary.applied</b> is true when Tehtris accepted the request for a connected agent, and false when the agent is offline and the host will be isolated once it reconnects. Confirm the result with <b>get isolation status</b>.",
+            "verbose": "The hostname must match one enrolled endpoint exactly (case-insensitive); refused when several endpoints share it. <b>summary.applied</b> is false when Tehtris answers 202 (queued for an agent that is not connected). Confirm with <b>get isolation status</b>.",
             "type": "contain",
             "read_only": false,
             "parameters": {
@@ -476,7 +476,7 @@
             "action": "remove from isolation",
             "identifier": "remove_from_isolation",
             "description": "Remove a host from isolation",
-            "verbose": "The hostname must match an enrolled endpoint exactly (Tehtris' inventory search matches substrings, so only an exact, case-insensitive match is used). When several endpoints share the hostname (for example a re-installed agent) the action is refused and lists their uuids. <b>summary.applied</b> is true when Tehtris accepted the request for a connected agent, and false when the agent is offline and the host will be released once it reconnects. Confirm the result with <b>get isolation status</b>.",
+            "verbose": "The hostname must match one enrolled endpoint exactly (case-insensitive); refused when several endpoints share it. <b>summary.applied</b> is false when Tehtris answers 202 (queued for an agent that is not connected). Confirm with <b>get isolation status</b>.",
             "type": "contain",
             "read_only": false,
             "parameters": {
@@ -833,7 +833,7 @@
             "action": "update tag",
             "identifier": "update_tag",
             "description": "Set an endpoint's tags (may replace its existing tags)",
-            "verbose": "The hostname must match an enrolled endpoint exactly (Tehtris' inventory search matches substrings, so only an exact, case-insensitive match is used). <b>Warning:</b> Tehtris takes one tag string per call and does not document whether it replaces or adds to the endpoint's existing tags, so treat this action as able to overwrite them: read the current tags with <b>get host detail</b> first and include any you want to keep. Refused when several endpoints share the hostname.",
+            "verbose": "The hostname must match one enrolled endpoint exactly (case-insensitive); refused when several endpoints share it. <b>Warning:</b> Tehtris takes one tag string per call and does not say whether it replaces the endpoint's tags, so treat it as replacing them: read them with <b>get host detail</b> first.",
             "type": "contain",
             "read_only": false,
             "parameters": {
@@ -848,7 +848,7 @@
                     ]
                 },
                 "tag": {
-                    "description": "Tag string in Tehtris' 'XXX_tags' pattern (the tenant trigram, an underscore, then the tags); may replace the endpoint's existing tags",
+                    "description": "Tag string in Tehtris' 'XXX_tags' pattern (trigram, underscore, tags); may replace the endpoint's tags",
                     "data_type": "string",
                     "required": true,
                     "primary": true,
@@ -900,7 +900,7 @@
             "action": "create app policy",
             "identifier": "create_app_policy",
             "description": "Create new application policy based on sha256",
-            "verbose": "Creates one application policy with a single Sha256 rule. Tehtris scopes an application policy by <b>appliance</b>: the request carries appliance ids and no per-endpoint field, so the policy applies to every endpoint on the appliances the listed hosts connect to, not only to those hosts. The hostname must match an enrolled endpoint exactly (Tehtris' inventory search matches substrings, so only an exact, case-insensitive match is used).",
+            "verbose": "Creates one application policy with a single Sha256 rule. Tehtris scopes it by <b>appliance</b>, so it covers every endpoint on the listed hosts' appliances, not only those hosts. Hostnames must match enrolled endpoints exactly (case-insensitive).",
             "type": "contain",
             "read_only": false,
             "parameters": {
@@ -991,7 +991,7 @@
             "action": "get isolation status",
             "identifier": "get_isolation_status",
             "description": "Get the current EDR isolation state of a host",
-            "verbose": "Reads the isolation flag for the host (Tehtris' IsolationStatus reply, <b>status</b> boolean). When no state comes back (HTTP 204) <b>summary.isolated</b> is null and the payload is in <b>raw_json</b>. Treat null as <i>unknown</i>, never as <i>not isolated</i>.",
+            "verbose": "The host's isolation flag (<b>status</b>). With no state returned (HTTP 204) <b>summary.isolated</b> is null: treat it as unknown, never as not isolated.",
             "type": "investigate",
             "read_only": true,
             "parameters": {
@@ -1077,7 +1077,7 @@
             "action": "get host detail",
             "identifier": "get_host_detail",
             "description": "Get EDR inventory detail for a host",
-            "verbose": "Exposes the inventory lookup the other host-scoped actions perform internally, returning every endpoint named exactly <b>hostname</b> (a re-installed agent keeps its hostname under a new uuid), most recently seen first; the summary describes that first one. Fields follow Tehtris' inventory schema; <b>os</b> and <b>versions</b> are free-form objects, available in <b>raw_json</b>. When no endpoint has that exact name the action still succeeds, with <b>total_hosts</b> 0 and the not-found reason as its message, so a playbook can tell 'no such host' from a failed call; every other host-scoped action fails on an unknown host.",
+            "verbose": "Every endpoint named exactly <b>hostname</b>, most recently seen first; the summary describes the first. An unknown host succeeds with <b>total_hosts</b> 0 and the not-found reason as its message. <b>os</b> and <b>versions</b> are in <b>raw_json</b>.",
             "type": "investigate",
             "read_only": true,
             "parameters": {
@@ -1204,7 +1204,7 @@
             "action": "get processes",
             "identifier": "get_processes",
             "description": "List processes seen on a host over a time window",
-            "verbose": "Unlike <b>list processes</b>, which builds a tree around a seed pid and requires one, this action returns a listing and needs no seed. Bound it with <b>time_from</b>/<b>time_to</b> and <b>limit</b>. Tehtris serves this listing through a cursor and the action reads its first page only, so <b>limit</b> caps the result. Fields follow Tehtris' process schema; <b>raw_json</b> carries the untouched record.",
+            "verbose": "A process listing (unlike <b>list processes</b>, a tree around a seed pid), bounded by <b>time_from</b>/<b>time_to</b>. Reads the first page of Tehtris' cursor, so <b>limit</b> caps the result.",
             "type": "investigate",
             "read_only": true,
             "parameters": {
@@ -1397,7 +1397,7 @@
             "action": "get system info",
             "identifier": "get_system_info",
             "description": "Get the operating system details of a host",
-            "verbose": "Live OS details from the EDR agent: <b>name</b>, <b>type</b> (desktop/server), <b>architecture</b>, <b>release</b> and <b>version</b>. Tehtris' reference lists only 'windows' as a name, so a host on another OS may answer HTTP 501 (not implemented on the endpoint). The payload is also available in <b>raw_json</b>.",
+            "verbose": "Live OS details: <b>name</b>, <b>type</b>, <b>architecture</b>, <b>release</b>, <b>version</b>. Tehtris lists only Windows, so another OS may answer 501.",
             "type": "investigate",
             "read_only": true,
             "parameters": {
@@ -1489,7 +1489,7 @@
             "action": "get network info",
             "identifier": "get_network_info",
             "description": "Get live network activity (netstat) for a host",
-            "verbose": "Live network activity from the EDR agent (Tehtris' netstat call). Each reply names its columns but Tehtris' reference does not list them, so every row is returned with those column names as keys and also in <b>raw_json</b>. Needs the agent to be connected.",
+            "verbose": "Live netstat from the EDR agent; rows are keyed by the column names each reply carries (not in Tehtris' reference). Live: needs the EDR agent connected (504 otherwise).",
             "type": "investigate",
             "read_only": true,
             "parameters": {
@@ -1563,7 +1563,7 @@
             "action": "get file info",
             "identifier": "get_file_info",
             "description": "Get hashes, version and signatures of a file on a host",
-            "verbose": "Reads a file's details from the EDR agent (Tehtris' FileInfoData): hashes, original file name, file and product version, and code signatures with their validity. Useful to check a file before quarantining it. When Tehtris returns nothing for the path (HTTP 204), the action succeeds with <b>summary.file_found</b> false. A live call: the EDR agent must be connected, otherwise Tehtris answers 504.",
+            "verbose": "The file's hashes, original name, versions and code signatures. No such file (HTTP 204) succeeds with <b>summary.file_found</b> false. Live: needs the EDR agent connected (504 otherwise).",
             "type": "investigate",
             "read_only": true,
             "parameters": {
@@ -1731,7 +1731,7 @@
             "action": "list software",
             "identifier": "list_software",
             "description": "List the software installed on a host",
-            "verbose": "The software list from the EDR agent. Each reply names its columns but Tehtris' reference does not list them, so every row is returned with those column names as keys and also in <b>raw_json</b>. A live call: the EDR agent must be connected, otherwise Tehtris answers 504.",
+            "verbose": "The installed software, rows keyed by the column names each reply carries. Live: needs the EDR agent connected (504 otherwise).",
             "type": "investigate",
             "read_only": true,
             "parameters": {
@@ -1805,7 +1805,7 @@
             "action": "list quarantined files",
             "identifier": "list_quarantined_files",
             "description": "List the files in quarantine on a host",
-            "verbose": "One record per quarantined file, carrying its <b>quarantinePath</b>: the path Tehtris stored the file under, which is what <b>restore file</b> takes (not the file's original path). A live call: the EDR agent must be connected, otherwise Tehtris answers 504.",
+            "verbose": "One record per quarantined file with its <b>quarantinePath</b>, the path <b>restore file</b> takes. Live: needs the EDR agent connected (504 otherwise).",
             "type": "investigate",
             "read_only": true,
             "parameters": {
@@ -1888,7 +1888,7 @@
             "action": "quarantine file",
             "identifier": "quarantine_file",
             "description": "Move a file on a host into Tehtris quarantine",
-            "verbose": "The hostname must match an enrolled endpoint exactly (Tehtris' inventory search matches substrings, so only an exact, case-insensitive match is used). Refused when several endpoints share the hostname. <b>summary.applied</b> is true when Tehtris accepted the request for a connected agent (HTTP 204), false when the agent is offline and the task is queued (HTTP 202). A 409 means Tehtris refused the request because of a conflict. Undo it with <b>list quarantined files</b> then <b>restore file</b>: the restore takes the file's path in quarantine, not this path. A live call: the EDR agent must be connected, otherwise Tehtris answers 504.",
+            "verbose": "The hostname must match one enrolled endpoint exactly (case-insensitive); refused when several endpoints share it. <b>summary.applied</b> is false when Tehtris answers 202 (queued for an agent that is not connected). 409 is a conflict. Undo with <b>list quarantined files</b>, then <b>restore file</b> with the quarantine path. Live: needs the EDR agent connected (504 otherwise).",
             "type": "contain",
             "read_only": false,
             "parameters": {
@@ -1913,7 +1913,7 @@
                     "order": 1
                 },
                 "notification": {
-                    "description": "On Windows, a notification shown to the endpoint user about the remediation (Tehtris does not document the value format; leave blank to send none)",
+                    "description": "Windows only: a message shown to the endpoint user (format undocumented; blank sends none)",
                     "data_type": "string",
                     "required": false,
                     "order": 2
@@ -1986,7 +1986,7 @@
             "action": "restore file",
             "identifier": "restore_file",
             "description": "Restore a quarantined file on a host",
-            "verbose": "The hostname must match an enrolled endpoint exactly (Tehtris' inventory search matches substrings, so only an exact, case-insensitive match is used). Refused when several endpoints share the hostname. <b>quarantine_path</b> is the path the file has in quarantine, as returned by <b>list quarantined files</b> (<b>quarantinePath</b>) - not the file's original path. <b>summary.restored_path</b> is where Tehtris put the file back. <b>summary.applied</b> is false when the agent is offline and the task is queued (HTTP 202). A live call: the EDR agent must be connected, otherwise Tehtris answers 504.",
+            "verbose": "The hostname must match one enrolled endpoint exactly (case-insensitive); refused when several endpoints share it. <b>quarantine_path</b> is the path in quarantine (<b>quarantinePath</b> from <b>list quarantined files</b>), not the original; <b>summary.restored_path</b> is where the file went back. <b>summary.applied</b> is false when Tehtris answers 202 (queued for an agent that is not connected). Live: needs the EDR agent connected (504 otherwise).",
             "type": "correct",
             "read_only": false,
             "parameters": {

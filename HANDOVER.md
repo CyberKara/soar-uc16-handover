@@ -1,6 +1,6 @@
 # UC16 — Tehtris EDR (connector + 5 playbooks) — Air-Gapped Handover Package
 
-Generated 2026-10-05 23:59 UTC from `tehtris_edr` (source env: `soar8`).
+Generated 2026-10-10 22:00 UTC from `tehtris_edr` (source env: `soar8`).
 
 This package is self-contained — everything needed to deploy this use case by hand
 in an environment with no network access back to this repo or to `soar8`.
@@ -11,7 +11,7 @@ in an environment with no network access back to this repo or to `soar8`.
 
 | Path | What |
 |------|------|
-| `connectors/` | Connector app package(s): tehtris-v1.2.2.tgz |
+| `connectors/` | Connector app package(s): tehtris_edr-v1.2.4.tgz |
 | `connectors/source/` | Same connector(s), extracted — for reading, not for import |
 | `playbooks/*.tgz` (PBs) | tehtris_host_posture, tehtris_host_isolate, tehtris_host_unisolate, tehtris_file_quarantine, tehtris_edr_response |
 | `playbooks/source/` | Same CFs/playbooks, extracted — for reading, not for import |
@@ -25,6 +25,8 @@ These apply only if this app is already installed on the target from a
 previous package. On a completely fresh target, skip to Install order.
 
 - **From the first package (connector v1.2.1 + `tehtris_host_posture` only):** install connector v1.2.2 over the existing Tehtris EDR app, a normal in-place upgrade; the asset and its API key stay as they are. v1.2.2 adds the optional asset field `timeout` (seconds per API call, 1-300; empty = 30, the old fixed value) and retries a read or a tag write up to three times when Tehtris answers 429, 500, 502 or 503; an isolation, release or quarantine request is never sent twice. `tehtris_host_posture` is unchanged: keep it, import the four new playbooks and create the custom list `tehtris_edr_settings`. The new playbooks name the asset `tehtris_mock` (the first package said `tehtris_mock_8446`): re-point their action blocks to your Tehtris asset in the VPE and save, as for the first package.
+
+- **Connector 1.2.4 and shorter texts (2026-10-10).** Install `tehtris_edr-v1.2.4.tgz` over the existing Tehtris EDR app: the package now carries the name `tehtris_edr`, but it is the same app (same identifier), so it upgrades in place and the asset keeps its API key. Its action help texts are shorter; the four write actions now say only that `summary.applied` is false when Tehtris answers 202 (queued). Nothing else changes. Re-import the five playbooks: their descriptions, block descriptions and comments are shorter, their behaviour is unchanged. Then re-point the action blocks of `tehtris_host_posture`, `tehtris_host_isolate`, `tehtris_host_unisolate` and `tehtris_file_quarantine` to your Tehtris asset in the VPE and save. The implementation plan in `docs/` now describes the current design only, with a Setup Guide.
 
 ## Install order
 

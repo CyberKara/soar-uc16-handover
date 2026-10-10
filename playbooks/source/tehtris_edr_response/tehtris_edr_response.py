@@ -1,5 +1,5 @@
 """
-Data playbook (UC16 PB4) run by an analyst on any container. One entry point for a Tehtris EDR response on a host: runs tehtris_host_posture, then tehtris_host_isolate with the posture summary shown in its approval prompt. Each child writes its own note; this playbook returns both outcomes.
+Runs tehtris_host_posture, then tehtris_host_isolate with the posture summary in its approval prompt, and returns both outcomes.
 """
 
 
@@ -13,13 +13,9 @@ from datetime import datetime, timedelta
 ################################################################################
 ################################################################################
 
-# Design notes (kept here because a VPE save replaces the module docstring):
-# UC16 PB4 -- see docs/usecases/uc16_tehtris_edr_implementation_plan.md.
-# Adds no capability, only convenience: the children do every check, prompt
-# and note themselves. Both playbook blocks are synchronous, so the isolation
-# prompt (PB2) is raised only after the posture note (PB1) is written, and the
-# posture summary reaches the prompt. An unknown host stops in PB2's pre-check
-# ("nothing sent"), so no separate gate is needed here.
+# The children do every check, prompt and note themselves. Both playbook
+# blocks are synchronous, so the isolation prompt comes after the posture note
+# and carries its summary; an unknown host stops in the isolation pre-check.
 
 
 def _first(rows, index=0):
@@ -153,7 +149,7 @@ def run_isolate(action=None, success=None, container=None, results=None, handle=
     phantom.debug("run_isolate() called")
 
     ################################################################################
-    # Isolation behind its analyst prompt: tehtris_host_isolate, with the posture summary.
+    # tehtris_host_isolate behind its analyst prompt, with the posture summary.
     ################################################################################
 
     check_inputs__hostname = json.loads(_ if (_ := phantom.get_run_data(key="check_inputs:hostname")) != "" else "null")  # pylint: disable=used-before-assignment
@@ -257,8 +253,8 @@ def on_finish(container, summary):
     raw_output = phantom.get_run_data(key="playbook_output")
     if raw_output:
         output.update(json.loads(raw_output))
-    # The 8.6 VPE initialises every output above to [] (8.5 wrote None), so an
-    # output no block set is normalised to null here, whichever form a save wrote.
+    # The 8.6 VPE initialises every output above to [], so an output no block
+    # set is normalised to null here, whichever form a save wrote.
     for key, value in output.items():
         if value == []:
             output[key] = None
